@@ -8,7 +8,7 @@ import jakarta.persistence.ManyToMany;
 import lombok.*;
 import org.springframework.validation.annotation.Validated;
 import starlight.backend.proof.model.entity.ProofEntity;
-import starlight.backend.user.model.entity.UserEntity;
+import starlight.backend.talent.model.entity.TalentEntity;
 
 import java.util.Set;
 
@@ -35,7 +35,7 @@ public class SkillEntity {
 
     @ManyToMany(mappedBy = "talentSkills")
     @JsonBackReference
-    private Set<UserEntity> talents;
+    private Set<TalentEntity> talents;
 
     public SkillEntity(String skill) {
         this.skill = skill;
