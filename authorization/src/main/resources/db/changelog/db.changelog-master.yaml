@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - include:
+      file: ddl/001_create_tables.sql
+      relativeToChangelogFile: true
+
+  - include:
+      file: dml/001_insert_data_user.sql
+      relativeToChangelogFile: true
+
+  - changeSet:
+      id: 21
+      author: kate

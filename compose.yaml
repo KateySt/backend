@@ -1,46 +1,26 @@
-version: '3.1'
 services:
-  backend:
-    container_name: "Starlight_Prod"
-    image: starlight_prod:latest
-    volumes:
-      - backend:/data/backend
-    ports:
-      - '8080-8090:8080'
-    networks:
-      - postgres
-    secrets:
-      - backend_secrets
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-
-    restart: unless-stopped
-
   postgres:
-    container_name: "PSQL_PROD"
+    container_name: postgres
     image: postgres
     environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USERNAME: postgres
-      POSTGRES_PASSWORD: 123456
-      PGGATA: /data/postgres
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 123456789
+      PGDATA: /data/postgres
     volumes:
       - postgres:/data/postgres
     ports:
-      - '5432:5432'
+      - "5432:5432"
     networks:
       - postgres
     restart: unless-stopped
 
   pgadmin:
-    container_name: pgadmin_prod
+    container_name: pgadmin
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: sekret7d@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: serg12345
-      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_DEFAULT_SERVER_MODE: 'False'
     volumes:
       - pgadmin:/var/lib/pgadmin
     ports:
@@ -55,9 +35,4 @@ networks:
 
 volumes:
   postgres:
-  backend:
   pgadmin:
-
-secrets:
-  backend_secrets:
-    file: .env
