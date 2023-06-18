@@ -191,6 +191,7 @@ public class TalentServiceImpl implements TalentServiceInterface {
         }
     }
 
+    @Override
     public Talent saveTalent(NewUser user) {
         //TODO: check if sponsor has this email
         if (talentRepository.existsByEmail(user.email())) {
@@ -206,10 +207,9 @@ public class TalentServiceImpl implements TalentServiceInterface {
 
     @Override
     public Talent getTalentByEmail(String email) {
-        if (talentRepository.existsByEmail(email)) {
-            throw new TalentNotFoundException(email);
-        }
+        log.info("email {}", email);
         var talent = talentRepository.findByEmail(email);
+        log.info("talent {}", talent);
         return talentMapper.toTalent(talent);
     }
 }

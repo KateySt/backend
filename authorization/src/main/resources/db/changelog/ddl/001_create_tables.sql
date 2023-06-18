@@ -21,12 +21,6 @@ CREATE TABLE users
 ALTER TABLE users
     ADD CONSTRAINT FK_USERS_ON_ROLE FOREIGN KEY (role_id) REFERENCES role (role_id);
 
-ALTER TABLE users
-    ADD CONSTRAINT FK_USERS_ON_SPONSOR FOREIGN KEY (sponsor_id) REFERENCES sponsor (sponsor_id);
-
-ALTER TABLE users
-    ADD CONSTRAINT FK_USERS_ON_TALENT FOREIGN KEY (talent_id) REFERENCES talent (talent_id);
-
 -- changeset kate:21
 CREATE TABLE admin
 (

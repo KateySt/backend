@@ -64,6 +64,7 @@ public class TalentConfig {
                 .requestMatchers(antMatcher("/actuator/**")).permitAll()
                 /////////////////////////Production////////////////////////////////////////////////
                 .requestMatchers("/api/v1/skills").permitAll()
+                .requestMatchers("/api/v3/talent").permitAll()
                 .requestMatchers("/api/v1/talents").permitAll()
                 .requestMatchers("/api/v2/talents").permitAll()
                 .requestMatchers("/api/v1/proofs").permitAll()
@@ -71,7 +72,6 @@ public class TalentConfig {
                 .requestMatchers(POST, "/api/v1/talents/login").permitAll()
                 .requestMatchers(antMatcher("/api/v1/proofs/**")).permitAll()
                 /////////////////////////Another///////////////////////////////////////////////////
-                .requestMatchers("/api/v3/talent").permitAll()
                 .requestMatchers("/**").hasAuthority("ROLE_ADMIN")
                 /////////////////////////Another///////////////////////////////////////////////////
                 .anyRequest().authenticated()

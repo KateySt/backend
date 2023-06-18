@@ -7,4 +7,6 @@ import starlight.backend.user.model.entity.RoleEntity;
 @Repository
 public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
     RoleEntity findByName(String name);
+
+    boolean existsByName(String authority);
 }

@@ -62,7 +62,4 @@ public class TalentEntity {
     @OneToMany(mappedBy = "talent")
     @JsonManagedReference
     private Set<ProofEntity> proofs;
-
-    @Column(name = "id")
-    private Long userId;
 }

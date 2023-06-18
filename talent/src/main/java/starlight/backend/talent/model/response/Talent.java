@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder
 public record Talent(
-        Long talentId,
+        long talentId,
         String email,
         String password
 ) {

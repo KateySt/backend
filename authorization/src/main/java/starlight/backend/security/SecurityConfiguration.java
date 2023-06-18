@@ -4,6 +4,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -41,6 +42,7 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @EnableMethodSecurity
 @Configuration
 @AllArgsConstructor
+@Slf4j
 class SecurityConfiguration {
     private MapperSecurity mapper;
     private RestTemplate restTemplate;
@@ -143,23 +145,21 @@ class SecurityConfiguration {
 
     @Bean
     UserDetailsService userDetailsService(UserRepository userRepository) {
-
         return email -> {
             Talent talent = restTemplate.getForObject(
-                    "http://TALENT/api/v1/talents",
-                    Talent.class,
-                    email
+                    "http://TALENT/api/v3/talent?email=" + email,
+                    Talent.class
             );
             if (userRepository.existsByAdmin_Email(email)) {
                 return mapper.toUserDetailsImplAdmin(userRepository.findByAdmin_Email(email));
-            } else if (talent != null) {
-                var user = userRepository.findByTalentId(talent.talentId());
+            } else if (talent.email() != null) {
+                var user = userRepository.findByTalentId(talent.talent_id());
                 return mapper.toUserDetailsImplTalent(talent, user);
             } else {
-                var user = userRepository.findByTalentId(talent.talentId());
+                var user = userRepository.findByTalentId(talent.talent_id());
                 return mapper.toUserDetailsImplTalent(talent, user);
                 //TODO: sponsor
-               // return mapper.toUserDetailsImplSponsor(userRepository.findBySponsor_Email(email));
+                // return mapper.toUserDetailsImplSponsor(userRepository.findBySponsor_Email(email));
             }
         };
     }

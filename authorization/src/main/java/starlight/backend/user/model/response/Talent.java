@@ -1,7 +1,10 @@
 package starlight.backend.user.model.response;
 
+import lombok.Builder;
+
+@Builder
 public record Talent(
-        Long talentId,
+        long talent_id,
         String email,
         String password
 ) {

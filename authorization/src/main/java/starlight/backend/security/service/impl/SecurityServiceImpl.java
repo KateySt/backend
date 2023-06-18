@@ -20,6 +20,7 @@ import starlight.backend.security.model.UserDetailsImpl;
 import starlight.backend.security.model.request.NewUser;
 import starlight.backend.security.model.response.SessionInfo;
 import starlight.backend.security.service.SecurityServiceInterface;
+import starlight.backend.user.model.entity.RoleEntity;
 import starlight.backend.user.model.entity.UserEntity;
 import starlight.backend.user.model.enums.Role;
 import starlight.backend.user.model.response.Talent;
@@ -46,17 +47,13 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
 
     @Override
     public SessionInfo loginInfo(Authentication auth) {
-        log.info("12");
-        log.info("auth {}",auth.getName());
         Talent talent = restTemplate.getForObject(
-                "http://TALENT/api/v3/talent",
-                Talent.class,
-                auth.getName()
+                "http://TALENT/api/v3/talent?email=" + auth.getName(),
+                Talent.class
         );
-        log.info("talent {}",talent);
-        var user = userRepository.findByTalentId(talent.talentId());
+        var user = userRepository.findByTalentId(talent.talent_id());
         var token = getJWTToken(mapperSecurity.toUserDetailsImplTalent(talent, user),
-                talent.talentId());
+                talent.talent_id());
         return mapperSecurity.toSessionInfo(token);
     }
 
@@ -88,14 +85,18 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
                 newUser,
                 Talent.class
         );
-        log.info("talent {}",talent);
+        if (!roleRepository.existsByName(Role.TALENT.getAuthority())) {
+            roleRepository.save(RoleEntity.builder()
+                    .name(Role.TALENT.getAuthority())
+                    .build());
+        }
         var role = roleRepository.findByName(Role.TALENT.getAuthority());
         var user = userRepository.save(UserEntity.builder()
-                .talentId(talent.talentId())
+                .talentId(talent.talent_id())
                 .role(role)
                 .build());
         var token = getJWTToken(mapperSecurity.toUserDetailsImplTalent(talent, user),
-                talent.talentId());
+                talent.talent_id());
         return mapperSecurity.toSessionInfo(token);
     }
 
@@ -119,6 +120,11 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
                 .email(newUser.email())
                 .password(passwordEncoder.encode(newUser.password()))
                 .build());
+        if (!roleRepository.existsByName(Role.ADMIN.getAuthority())) {
+            roleRepository.save(RoleEntity.builder()
+                    .name(Role.ADMIN.getAuthority())
+                    .build());
+        }
         var role = roleRepository.findByName(Role.ADMIN.getAuthority());
         var user = userRepository.save(UserEntity.builder()
                 .role(role)
