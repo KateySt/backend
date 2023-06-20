@@ -4,38 +4,24 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import starlight.backend.exception.proof.ProofNotFoundException;
-import starlight.backend.exception.proof.UserAccesDeniedToProofException;
-import starlight.backend.exception.proof.UserCanNotEditProofNotInDraftException;
-import starlight.backend.exception.skill.SkillNotFoundException;
-import starlight.backend.exception.user.UserCanNotEditThisProfile;
-import starlight.backend.exception.user.UserNotFoundException;
-import starlight.backend.exception.user.talent.TalentNotFoundException;
 import starlight.backend.proof.ProofMapper;
 import starlight.backend.proof.ProofRepository;
-import starlight.backend.proof.model.entity.ProofEntity;
-import starlight.backend.proof.model.enums.Status;
-import starlight.backend.proof.model.response.ProofListWithSkills;
-import starlight.backend.proof.model.response.ProofWithSkills;
 import starlight.backend.skill.SkillMapper;
 import starlight.backend.skill.model.entity.SkillEntity;
-import starlight.backend.skill.model.request.AddSkill;
-import starlight.backend.skill.model.request.DeleteIdSkills;
 import starlight.backend.skill.model.response.SkillList;
 import starlight.backend.skill.model.response.SkillListWithPagination;
 import starlight.backend.skill.repository.SkillRepository;
 import starlight.backend.skill.service.SkillServiceInterface;
-import starlight.backend.talent.model.response.TalentWithSkills;
 import starlight.backend.talent.repository.TalentRepository;
 import starlight.backend.talent.service.TalentServiceInterface;
 
-import java.time.Instant;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 
@@ -72,7 +58,7 @@ public class SkillServiceImpl implements SkillServiceInterface {
                 .toList();
         return skillMapper.toSkillListWithPagination(sortedSkills, skillRepository.count());
     }
-
+/*
     @Override
     public ProofWithSkills addSkillInYourProof(long talentId, long proofId,
                                                Authentication auth, AddSkill skills) {
@@ -94,7 +80,7 @@ public class SkillServiceImpl implements SkillServiceInterface {
             proofRepository.save(proof);
         }
         return skillMapper.toProofWithSkills(proof);
-    }
+    }*/
 
     @Override
     public SkillList getListSkillsOfProof(long proofId) {
@@ -123,7 +109,7 @@ public class SkillServiceImpl implements SkillServiceInterface {
                 skillRepository.findBySkillIgnoreCase(skill) :
                 null;
     }
-
+/*
     @Override
     public void deleteSkill(long talentId, long proofId, long skillId, Authentication auth) {
         if (talentService.checkingLoggedAndToken(talentId, auth)) {
@@ -237,5 +223,5 @@ public class SkillServiceImpl implements SkillServiceInterface {
         }
         proofs = proofRepository.findByTalent_TalentIdAndSkills_SkillIdAndStatus(talentId, skillId, status);
         return proofMapper.fromFulltoProofListWithSkills(proofs);
-    }
+    }*/
 }

@@ -16,11 +16,13 @@ public class TalentControllerMic {
 
     @PostMapping("/talent")
     public Talent saveTalent(@RequestBody NewUser newUser) {
+        log.info("@PostMapping(\"/talent\")");
         return talentService.saveTalent(newUser);
     }
 
     @GetMapping("/talent")
     public Talent getTalentByEmail(@RequestParam String email) {
+        log.info("@GetMapping(\"/talent\")");
         return talentService.getTalentByEmail(email);
     }
 }

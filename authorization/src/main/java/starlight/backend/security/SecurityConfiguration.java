@@ -80,8 +80,6 @@ class SecurityConfiguration {
                 .requestMatchers(antMatcher("/api/v1/proofs/**")).permitAll()
                 .requestMatchers("/api/v1/sponsors/recovery-account").permitAll()
                 /////////////////////////Another///////////////////////////////////////////////////
-                .requestMatchers("/**").hasAuthority("ROLE_ADMIN")
-                /////////////////////////Another///////////////////////////////////////////////////
                 .anyRequest().authenticated()
         );
         http.sessionManagement().sessionCreationPolicy(STATELESS);
@@ -146,10 +144,11 @@ class SecurityConfiguration {
     @Bean
     UserDetailsService userDetailsService(UserRepository userRepository) {
         return email -> {
-            Talent talent = restTemplate.getForObject(
+            /*Talent talent = restTemplate.getForObject(
                     "http://TALENT/api/v3/talent?email=" + email,
                     Talent.class
-            );
+            );*/
+            Talent talent = Talent.builder().build();
             if (userRepository.existsByAdmin_Email(email)) {
                 return mapper.toUserDetailsImplAdmin(userRepository.findByAdmin_Email(email));
             } else if (talent.email() != null) {

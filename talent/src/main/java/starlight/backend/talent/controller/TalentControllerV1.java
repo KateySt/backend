@@ -11,11 +11,8 @@ import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import starlight.backend.talent.model.request.TalentUpdateRequest;
 import starlight.backend.talent.model.response.TalentFullInfo;
 import starlight.backend.talent.model.response.TalentPagePagination;
 import starlight.backend.talent.service.TalentServiceInterface;
@@ -85,7 +82,7 @@ public class TalentControllerV1 {
         log.info("@GetMapping(\"/talents/{talent-id}\")");
         return talentService.talentFullInfo(talentId);
     }
-
+/*
     @Operation(
             summary = "Update talent by id",
             description = "Update a talent from id." +
@@ -139,5 +136,5 @@ public class TalentControllerV1 {
                              Authentication auth) {
         log.info("@DeleteMapping(\"/talents/{talent-id}\")");
         talentService.deleteTalentProfile(talentId, auth);
-    }
+    }*/
 }

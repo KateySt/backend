@@ -1,48 +1,6 @@
 package starlight.backend.proof.service.impl;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import starlight.backend.exception.PageNotFoundException;
-import starlight.backend.exception.proof.InvalidStatusException;
-import starlight.backend.exception.proof.ProofNotFoundException;
-import starlight.backend.exception.proof.UserAccesDeniedToProofException;
-import starlight.backend.exception.proof.UserCanNotEditProofNotInDraftException;
-import starlight.backend.exception.user.UserNotFoundException;
-import starlight.backend.exception.user.talent.TalentNotFoundException;
-import starlight.backend.kudos.model.entity.KudosEntity;
-import starlight.backend.kudos.repository.KudosRepository;
-import starlight.backend.proof.ProofMapper;
-import starlight.backend.proof.ProofRepository;
-import starlight.backend.proof.model.entity.ProofEntity;
-import starlight.backend.proof.model.enums.Status;
-import starlight.backend.proof.model.request.ProofAddRequest;
-import starlight.backend.proof.model.request.ProofAddWithSkillsRequest;
-import starlight.backend.proof.model.request.ProofUpdateRequest;
-import starlight.backend.proof.model.response.ProofFullInfo;
-import starlight.backend.proof.model.response.ProofFullInfoWithSkills;
-import starlight.backend.proof.model.response.ProofPagePagination;
-import starlight.backend.proof.model.response.ProofPagePaginationWithSkills;
-import starlight.backend.proof.service.ProofServiceInterface;
-import starlight.backend.skill.service.SkillServiceInterface;
-import starlight.backend.talent.repository.TalentRepository;
-import starlight.backend.talent.service.TalentServiceInterface;
-
-import java.net.URI;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.regex.Pattern;
-
+/*
 @AllArgsConstructor
 @Service
 @Transactional
@@ -223,7 +181,7 @@ public class ProofServiceImpl implements ProofServiceInterface {
 
     @Override
     public void deleteProof(long talentId, long proofId, Authentication auth) {
-       /* if (talentService.checkingLoggedAndToken(talentId, auth)) {
+        if (talentService.checkingLoggedAndToken(talentId, auth)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "you cannot delete proof another talent");
         }
         ProofEntity proof = repository.findById(proofId)
@@ -235,7 +193,7 @@ public class ProofServiceImpl implements ProofServiceInterface {
             kudosRepository.deleteById(kudos.getKudosId());
         }
         proof.getKudos().clear();
-        repository.deleteById(proofId);*/
+        repository.deleteById(proofId);
     }
 
     @Override
@@ -318,5 +276,5 @@ public class ProofServiceImpl implements ProofServiceInterface {
             throw new InvalidStatusException(status);
         }
     }
-}
+}*/
 

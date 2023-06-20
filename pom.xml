@@ -9,6 +9,7 @@
         <module>sponsor</module>
         <module>authorization</module>
         <module>eureka-server</module>
+        <module>gate-way</module>
     </modules>
 
     <groupId>starlight.backend</groupId>
@@ -52,6 +53,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
         </dependency>
     </dependencies>
 

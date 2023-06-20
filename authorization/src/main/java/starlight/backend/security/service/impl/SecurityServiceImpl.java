@@ -47,10 +47,11 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
 
     @Override
     public SessionInfo loginInfo(Authentication auth) {
-        Talent talent = restTemplate.getForObject(
+       /* Talent talent = restTemplate.getForObject(
                 "http://TALENT/api/v3/talent?email=" + auth.getName(),
                 Talent.class
-        );
+        );*/
+        Talent talent = Talent.builder().build();//TODO
         var user = userRepository.findByTalentId(talent.talent_id());
         var token = getJWTToken(mapperSecurity.toUserDetailsImplTalent(talent, user),
                 talent.talent_id());
@@ -80,9 +81,14 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
 
     @Override
     public SessionInfo register(NewUser newUser) {
+        NewUser user = NewUser.builder()
+                .fullName(newUser.fullName())
+                .email(newUser.email())
+                .password(passwordEncoder.encode(newUser.password()))
+                .build();
         Talent talent = restTemplate.postForObject(
                 "http://TALENT/api/v3/talent",
-                newUser,
+                user,
                 Talent.class
         );
         if (!roleRepository.existsByName(Role.TALENT.getAuthority())) {
@@ -91,11 +97,11 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
                     .build());
         }
         var role = roleRepository.findByName(Role.TALENT.getAuthority());
-        var user = userRepository.save(UserEntity.builder()
+        var userEntity = userRepository.save(UserEntity.builder()
                 .talentId(talent.talent_id())
                 .role(role)
                 .build());
-        var token = getJWTToken(mapperSecurity.toUserDetailsImplTalent(talent, user),
+        var token = getJWTToken(mapperSecurity.toUserDetailsImplTalent(talent, userEntity),
                 talent.talent_id());
         return mapperSecurity.toSessionInfo(token);
     }

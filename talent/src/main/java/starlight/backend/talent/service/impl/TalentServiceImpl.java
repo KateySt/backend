@@ -5,27 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import starlight.backend.exception.EmailAlreadyOccupiedException;
 import starlight.backend.exception.PageNotFoundException;
 import starlight.backend.exception.proof.InvalidStatusException;
-import starlight.backend.exception.user.UserAccesDeniedToDeleteThisUserException;
-import starlight.backend.exception.user.UserNotFoundException;
 import starlight.backend.exception.user.talent.TalentNotFoundException;
 import starlight.backend.kudos.repository.KudosRepository;
 import starlight.backend.proof.ProofRepository;
-import starlight.backend.proof.model.entity.ProofEntity;
 import starlight.backend.proof.model.enums.Status;
 import starlight.backend.talent.MapperTalent;
 import starlight.backend.talent.model.entity.PositionEntity;
 import starlight.backend.talent.model.entity.TalentEntity;
 import starlight.backend.talent.model.request.NewUser;
-import starlight.backend.talent.model.request.TalentUpdateRequest;
 import starlight.backend.talent.model.response.Talent;
 import starlight.backend.talent.model.response.TalentFullInfo;
 import starlight.backend.talent.model.response.TalentPagePagination;
@@ -48,14 +40,13 @@ public class TalentServiceImpl implements TalentServiceInterface {
     private TalentRepository talentRepository;
     private PositionRepository positionRepository;
     private ProofRepository proofRepository;
-    private PasswordEncoder passwordEncoder;
     private final String filterParam = "talentId";
 
-    @Override
-    public boolean checkingLoggedAndToken(long userId, Authentication auth) {
-        return !Objects.equals(auth.getName(), String.valueOf(userId));
-    }
-
+    /*  @Override
+      public boolean checkingLoggedAndToken(long userId, Authentication auth) {
+          return !Objects.equals(auth.getName(), String.valueOf(userId));
+      }
+  */
     @Override
     public TalentPagePagination talentPagination(int page, int size) {
         var pageRequest = talentRepository.findAll(
@@ -73,40 +64,36 @@ public class TalentServiceImpl implements TalentServiceInterface {
                 .orElseThrow(() -> new TalentNotFoundException(id));
     }
 
-    @Override
-    public TalentFullInfo updateTalentProfile(long id, TalentUpdateRequest talentUpdateRequest, Authentication auth) {
-        if (checkingLoggedAndToken(id, auth)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "you cannot change another talent");
+    /*
+        @Override
+        public TalentFullInfo updateTalentProfile(long id, TalentUpdateRequest talentUpdateRequest, Authentication auth) {
+            if (checkingLoggedAndToken(id, auth)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "you cannot change another talent");
+            }
+            return talentRepository.findById(id).map(talent -> {
+                talent.setFullName(validationField(
+                        talentUpdateRequest.fullName(),
+                        talent.getFullName()));
+                talent.setBirthday(talentUpdateRequest.avatar() == null ?
+                        talent.getBirthday() :
+                        talentUpdateRequest.birthday());
+                talent.setAvatar(validationField(
+                        talentUpdateRequest.avatar(),
+                        talent.getAvatar()));
+                talent.setEducation(validationField(
+                        talentUpdateRequest.education(),
+                        talent.getEducation()));
+                talent.setExperience(validationField(
+                        talentUpdateRequest.experience(),
+                        talent.getExperience()));
+                talent.setPositions(validationPosition(
+                        talent.getPositions(),
+                        talentUpdateRequest.positions()));
+                talentRepository.save(talent);
+                return talentMapper.toTalentFullInfo(talent);
+            }).orElseThrow(() -> new TalentNotFoundException(id));
         }
-        return talentRepository.findById(id).map(talent -> {
-            talent.setFullName(validationField(
-                    talentUpdateRequest.fullName(),
-                    talent.getFullName()));
-            talent.setBirthday(talentUpdateRequest.avatar() == null ?
-                    talent.getBirthday() :
-                    talentUpdateRequest.birthday());
-            talent.setPassword(
-                    talentUpdateRequest.password() == null ?
-                            talent.getPassword() :
-                            passwordEncoder.encode(talentUpdateRequest.password())
-            );
-            talent.setAvatar(validationField(
-                    talentUpdateRequest.avatar(),
-                    talent.getAvatar()));
-            talent.setEducation(validationField(
-                    talentUpdateRequest.education(),
-                    talent.getEducation()));
-            talent.setExperience(validationField(
-                    talentUpdateRequest.experience(),
-                    talent.getExperience()));
-            talent.setPositions(validationPosition(
-                    talent.getPositions(),
-                    talentUpdateRequest.positions()));
-            talentRepository.save(talent);
-            return talentMapper.toTalentFullInfo(talent);
-        }).orElseThrow(() -> new TalentNotFoundException(id));
-    }
-
+    */
     private String validationField(String newParam, String lastParam) {
         return newParam == null ?
                 lastParam :
@@ -138,7 +125,7 @@ public class TalentServiceImpl implements TalentServiceInterface {
 //            TODO: add delete endpoint for delete positions
     }
 
-    @Override
+  /*  @Override
     public void deleteTalentProfile(long talentId, Authentication auth) {
         if (checkingLoggedAndToken(talentId, auth)) {
             throw new UserAccesDeniedToDeleteThisUserException(talentId);
@@ -158,7 +145,7 @@ public class TalentServiceImpl implements TalentServiceInterface {
         }
         talent.getProofs().clear();
         talentRepository.deleteById(talent.getTalentId());
-    }
+    }*/
 
 
     @Override
@@ -199,7 +186,7 @@ public class TalentServiceImpl implements TalentServiceInterface {
         }
         var talent = talentRepository.save(TalentEntity.builder()
                 .email(user.email())
-                .password(passwordEncoder.encode(user.password()))
+                .password(user.password())
                 .fullName(user.fullName())
                 .build());
         return talentMapper.toTalent(talent);

@@ -1,28 +1,6 @@
 package starlight.backend.proof.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import starlight.backend.proof.model.request.ProofAddRequest;
-import starlight.backend.proof.model.request.ProofUpdateRequest;
-import starlight.backend.proof.model.response.ProofFullInfo;
-import starlight.backend.proof.model.response.ProofPagePagination;
-import starlight.backend.proof.service.ProofServiceInterface;
-
+/*
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -188,3 +166,4 @@ public class ProofControllerV1 {
         return proofService.getProofFullInfo(auth, proofId);
     }
 }
+*/

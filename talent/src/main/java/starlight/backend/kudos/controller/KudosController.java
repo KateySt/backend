@@ -1,23 +1,6 @@
 package starlight.backend.kudos.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.Authentication;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import starlight.backend.exception.proof.ProofNotFoundException;
-import starlight.backend.kudos.model.entity.KudosEntity;
-import starlight.backend.kudos.model.response.KudosOnProof;
-import starlight.backend.kudos.service.KudosServiceInterface;
-
+/*
 @AllArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1")
@@ -87,4 +70,4 @@ public class KudosController {
         log.info("Getting proof-id = {}", proofId);
         return kudosService.addKudosOnProof(proofId, kudos, auth);
     }
-}
+}*/
