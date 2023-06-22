@@ -4,17 +4,14 @@ package starlight.backend.security.service.impl;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import starlight.backend.admin.AdminRepository;
 import starlight.backend.admin.model.emtity.AdminEntity;
 import starlight.backend.exception.user.UserNotFoundException;
+import starlight.backend.security.JwtService;
 import starlight.backend.security.MapperSecurity;
 import starlight.backend.security.model.UserDetailsImpl;
 import starlight.backend.security.model.request.NewUser;
@@ -27,34 +24,29 @@ import starlight.backend.user.model.response.Talent;
 import starlight.backend.user.repository.RoleRepository;
 import starlight.backend.user.repository.UserRepository;
 
-import java.time.Instant;
-import java.util.stream.Collectors;
-
-import static java.time.temporal.ChronoUnit.MINUTES;
-
 @AllArgsConstructor
 @Service
 @Transactional
 @Slf4j
 public class SecurityServiceImpl implements SecurityServiceInterface {
-    private final JwtEncoder jwtEncoder;
     private MapperSecurity mapperSecurity;
     private PasswordEncoder passwordEncoder;
     private UserRepository userRepository;
     private RoleRepository roleRepository;
     private AdminRepository adminRepository;
     private RestTemplate restTemplate;
+    private JwtService jwtService;
 
     @Override
     public SessionInfo loginInfo(Authentication auth) {
-       /* Talent talent = restTemplate.getForObject(
+        //log.info("auth {}", auth);
+        // log.info("auth {}", auth.getName());
+        Talent talent = restTemplate.getForObject(
                 "http://TALENT/api/v3/talent?email=" + auth.getName(),
                 Talent.class
-        );*/
-        Talent talent = Talent.builder().build();//TODO
+        );
         var user = userRepository.findByTalentId(talent.talent_id());
-        var token = getJWTToken(mapperSecurity.toUserDetailsImplTalent(talent, user),
-                talent.talent_id());
+        var token = getJWTToken(mapperSecurity.toUserDetailsImplTalent(talent, user), talent.talent_id());
         return mapperSecurity.toSessionInfo(token);
     }
 
@@ -91,6 +83,7 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
                 user,
                 Talent.class
         );
+        log.info("talent {}", talent);
         if (!roleRepository.existsByName(Role.TALENT.getAuthority())) {
             roleRepository.save(RoleEntity.builder()
                     .name(Role.TALENT.getAuthority())
@@ -144,23 +137,6 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
     @Override
     @Transactional(readOnly = true)
     public String getJWTToken(UserDetailsImpl authentication, long id) {
-        var now = Instant.now();
-        var claims = JwtClaimsSet.builder()
-                .issuer("self")
-                .issuedAt(now)
-                .expiresAt(now.plus(180, MINUTES))
-                .subject(String.valueOf(id))
-                .claim("scope", createScope(authentication))
-                .claim("status", authentication.getStatus())
-                .build();
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public String createScope(UserDetailsImpl authentication) {
-        return authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(" "));
+        return jwtService.generateToken(authentication, String.valueOf(id));
     }
 }

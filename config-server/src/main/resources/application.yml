@@ -1,0 +1,28 @@
+server:
+  port: 9297
+
+spring:
+  application:
+    name: config
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/KateySt/cofig.git
+          clone-on-start: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    fetch-registry: true
+    register-with-eureka: true
+
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          client:
+            RestTemplate: DEBUG

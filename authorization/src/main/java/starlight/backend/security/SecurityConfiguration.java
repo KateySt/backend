@@ -1,41 +1,22 @@
 package starlight.backend.security;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
-import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import starlight.backend.user.model.response.Talent;
-import starlight.backend.user.repository.UserRepository;
-
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.interfaces.RSAPublicKey;
 
 import static org.springframework.http.HttpMethod.POST;
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @EnableWebSecurity
@@ -44,14 +25,9 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @AllArgsConstructor
 @Slf4j
 class SecurityConfiguration {
-    private MapperSecurity mapper;
-    private RestTemplate restTemplate;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(c -> c
-                /////////////////////////Tests/////////////////////////////////////////////////////
-                .requestMatchers("/test").permitAll()
                 .requestMatchers(antMatcher("/h2/**")).permitAll()
                 /////////////////////////OpenApi///////////////////////////////////////////////////
                 .requestMatchers(antMatcher("/api-docs/**")).permitAll()
@@ -82,19 +58,33 @@ class SecurityConfiguration {
                 /////////////////////////Another///////////////////////////////////////////////////
                 .anyRequest().authenticated()
         );
-        http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.httpBasic();
         http.csrf().disable();
-        http.cors();
-        http.headers().frameOptions().disable();
-        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-                .exceptionHandling(c -> c
-                        .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                        .accessDeniedHandler(new BearerTokenAccessDeniedHandler()));
         return http.build();
     }
 
     @Bean
+    public UserDetailsService userDetailsService() {
+        return new UserDetailsServiceImpl();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return authenticationProvider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+ /*   @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
@@ -107,59 +97,5 @@ class SecurityConfiguration {
         };
     }
 
-    @Bean
-    public KeyPair keyPair() throws NoSuchAlgorithmException {
-        var keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(2048);
-        return keyPairGenerator.generateKeyPair();
-    }
-
-    @Bean
-    JwtDecoder jwtDecoder(KeyPair keyPair) {
-        return NimbusJwtDecoder.withPublicKey((RSAPublicKey) keyPair.getPublic()).build();
-    }
-
-    @Bean
-    JwtEncoder jwtEncoder(KeyPair keyPair) {
-        var jwk = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic()).privateKey(keyPair.getPrivate()).build();
-        var jwkSet = new ImmutableJWKSet<>(new JWKSet(jwk));
-        return new NimbusJwtEncoder(jwkSet);
-    }
-
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthorityPrefix("");
-
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
-        return jwtAuthenticationConverter;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    UserDetailsService userDetailsService(UserRepository userRepository) {
-        return email -> {
-            /*Talent talent = restTemplate.getForObject(
-                    "http://TALENT/api/v3/talent?email=" + email,
-                    Talent.class
-            );*/
-            Talent talent = Talent.builder().build();
-            if (userRepository.existsByAdmin_Email(email)) {
-                return mapper.toUserDetailsImplAdmin(userRepository.findByAdmin_Email(email));
-            } else if (talent.email() != null) {
-                var user = userRepository.findByTalentId(talent.talent_id());
-                return mapper.toUserDetailsImplTalent(talent, user);
-            } else {
-                var user = userRepository.findByTalentId(talent.talent_id());
-                return mapper.toUserDetailsImplTalent(talent, user);
-                //TODO: sponsor
-                // return mapper.toUserDetailsImplSponsor(userRepository.findBySponsor_Email(email));
-            }
-        };
-    }
+*/
 }

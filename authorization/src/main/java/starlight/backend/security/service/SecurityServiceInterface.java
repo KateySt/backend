@@ -12,8 +12,6 @@ public interface SecurityServiceInterface {
 
     String getJWTToken(UserDetailsImpl authentication, long id);
 
-    String createScope(UserDetailsImpl authentication);
-
     SessionInfo registerSponsor(NewUser newUser);
 
     SessionInfo registerAdmin(NewUser newUser);
