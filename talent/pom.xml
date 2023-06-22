@@ -14,8 +14,8 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <springdoc.openapi.starter.webmvc.ui>2.1.0</springdoc.openapi.starter.webmvc.ui>
         <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>

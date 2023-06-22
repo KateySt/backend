@@ -1,9 +1,9 @@
 package starlight.backend.security.service.impl;
 
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +24,9 @@ import starlight.backend.user.model.response.Talent;
 import starlight.backend.user.repository.RoleRepository;
 import starlight.backend.user.repository.UserRepository;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 @AllArgsConstructor
 @Service
 @Transactional
@@ -38,20 +41,28 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
     private JwtService jwtService;
 
     @Override
-    public SessionInfo loginInfo(Authentication auth) {
-        //log.info("auth {}", auth);
-        // log.info("auth {}", auth.getName());
+    public SessionInfo loginInfo(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        String username = "";
+        if (authorizationHeader != null && authorizationHeader.startsWith("Basic ")) {
+            String base64Credentials = authorizationHeader.substring(6);
+            String credentials = new String(Base64.getDecoder().decode(base64Credentials),
+                    StandardCharsets.UTF_8);
+            String[] usernameAndPassword = credentials.split(":", 2);
+            username = usernameAndPassword[0];
+        }
         Talent talent = restTemplate.getForObject(
-                "http://TALENT/api/v3/talent?email=" + auth.getName(),
+                "http://TALENT/api/v3/talent?email=" + username,
                 Talent.class
         );
         var user = userRepository.findByTalentId(talent.talent_id());
-        var token = getJWTToken(mapperSecurity.toUserDetailsImplTalent(talent, user), talent.talent_id());
+        var token = getJWTToken(mapperSecurity.toUserDetailsImplTalent(talent, user),
+                talent.talent_id());
         return mapperSecurity.toSessionInfo(token);
     }
 
     @Override
-    public SessionInfo loginInfoSponsor(Authentication auth) {
+    public SessionInfo loginInfoSponsor(HttpServletRequest request) {
         //TODO: find by id sponsor
        /* var user = userRepository.findBySponsor_Email(auth.getName());
         var token = getJWTToken(mapperSecurity.toUserDetailsImplSponsor(user),
@@ -61,11 +72,20 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
     }
 
     @Override
-    public SessionInfo loginInfoAdmin(Authentication auth) {
-        if (!userRepository.existsByAdmin_Email(auth.getName())) {
-            throw new UserNotFoundException(auth.getName());
+    public SessionInfo loginInfoAdmin(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        String username = "";
+        if (authorizationHeader != null && authorizationHeader.startsWith("Basic ")) {
+            String base64Credentials = authorizationHeader.substring(6);
+            String credentials = new String(Base64.getDecoder().decode(base64Credentials),
+                    StandardCharsets.UTF_8);
+            String[] usernameAndPassword = credentials.split(":", 2);
+            username = usernameAndPassword[0];
         }
-        var user = userRepository.findByAdmin_Email(auth.getName());
+        if (!userRepository.existsByAdmin_Email(username)) {
+            throw new UserNotFoundException(username);
+        }
+        var user = userRepository.findByAdmin_Email(username);
         var token = getJWTToken(mapperSecurity.toUserDetailsImplAdmin(user),
                 user.getAdmin().getAdminId());
         return mapperSecurity.toSessionInfo(token);

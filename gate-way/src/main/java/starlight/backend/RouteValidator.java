@@ -36,7 +36,6 @@ public class RouteValidator {
             "/api/v1/admin/login",
             "/api/v1/proofs/**",
             "/api/v1/sponsors/recovery-account"
-
     );
     public Predicate<ServerHttpRequest> isSecured =
             request -> openApiEndpoints

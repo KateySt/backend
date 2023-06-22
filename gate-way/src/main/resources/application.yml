@@ -4,20 +4,36 @@ server:
 spring:
   application:
     name: gateway
-  jackson:
-    property-naming-strategy: SNAKE_CASE
-  security:
-    oauth2:
-      resource-server:
-        jwt:
-          jwk-set-uri: http://AUTH/.well-known/jwks.json
   cloud:
     gateway:
       discovery:
         locator:
           enabled: true
           lower-case-service-id: true
+      routes:
+        - id: talent
+          uri: lb://TALENT
+          predicates:
+            - Path=/api/v1/**
+            - Path=/api/v2/**
+            - Path=/api/v3/**
+          filters:
+            - AuthenticationFilter
+        - id: sponsor
+          uri: lb://SPONSOR
+          predicates:
+            - Path=/api/v1/**
+            - Path=/api/v2/**
+            - Path=/api/v3/**
+          filters:
+            - AuthenticationFilter
+        - id: authorization
+          uri: lb://AUTH
+          predicates:
+            - Path=/api/v1/**
+            - Path=/api/v2/**
+            - Path=/api/v3/**
 
 jwt:
-  secret: FVUdfgJIfJOPOHnfdUDGFsgJN
+  secret: 5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
 
