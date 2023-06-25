@@ -11,11 +11,11 @@ import org.springframework.web.client.RestTemplate;
 import starlight.backend.admin.AdminRepository;
 import starlight.backend.admin.model.emtity.AdminEntity;
 import starlight.backend.exception.user.UserNotFoundException;
-import starlight.backend.security.JwtService;
 import starlight.backend.security.MapperSecurity;
 import starlight.backend.security.model.UserDetailsImpl;
 import starlight.backend.security.model.request.NewUser;
 import starlight.backend.security.model.response.SessionInfo;
+import starlight.backend.security.service.JwtService;
 import starlight.backend.security.service.SecurityServiceInterface;
 import starlight.backend.user.model.entity.RoleEntity;
 import starlight.backend.user.model.entity.UserEntity;
@@ -42,15 +42,7 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
 
     @Override
     public SessionInfo loginInfo(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        String username = "";
-        if (authorizationHeader != null && authorizationHeader.startsWith("Basic ")) {
-            String base64Credentials = authorizationHeader.substring(6);
-            String credentials = new String(Base64.getDecoder().decode(base64Credentials),
-                    StandardCharsets.UTF_8);
-            String[] usernameAndPassword = credentials.split(":", 2);
-            username = usernameAndPassword[0];
-        }
+        String username = getName(request);
         Talent talent = restTemplate.getForObject(
                 "http://TALENT/api/v3/talent?email=" + username,
                 Talent.class
@@ -73,15 +65,7 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
 
     @Override
     public SessionInfo loginInfoAdmin(HttpServletRequest request) {
-        String authorizationHeader = request.getHeader("Authorization");
-        String username = "";
-        if (authorizationHeader != null && authorizationHeader.startsWith("Basic ")) {
-            String base64Credentials = authorizationHeader.substring(6);
-            String credentials = new String(Base64.getDecoder().decode(base64Credentials),
-                    StandardCharsets.UTF_8);
-            String[] usernameAndPassword = credentials.split(":", 2);
-            username = usernameAndPassword[0];
-        }
+        String username = getName(request);
         if (!userRepository.existsByAdmin_Email(username)) {
             throw new UserNotFoundException(username);
         }
@@ -152,6 +136,19 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
         var token = getJWTToken(mapperSecurity.toUserDetailsImplAdmin(user),
                 user.getAdmin().getAdminId());
         return mapperSecurity.toSessionInfo(token);
+    }
+
+    private String getName(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        String username = "";
+        if (authorizationHeader != null && authorizationHeader.startsWith("Basic ")) {
+            String base64Credentials = authorizationHeader.substring(6);
+            String credentials = new String(Base64.getDecoder().decode(base64Credentials),
+                    StandardCharsets.UTF_8);
+            String[] usernameAndPassword = credentials.split(":", 2);
+            username = usernameAndPassword[0];
+        }
+        return username;
     }
 
     @Override

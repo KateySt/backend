@@ -1,4 +1,4 @@
-package starlight.backend.security;
+package starlight.backend.security.service;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

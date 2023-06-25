@@ -1,4 +1,4 @@
-package starlight.backend.security;
+package starlight.backend.security.service;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import starlight.backend.security.MapperSecurity;
 import starlight.backend.user.model.response.Talent;
 import starlight.backend.user.repository.UserRepository;
 
