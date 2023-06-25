@@ -1,7 +1,5 @@
 package starlight.backend.sponsor.service;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import starlight.backend.sponsor.model.request.SponsorUpdateRequest;
 import starlight.backend.sponsor.model.response.SponsorFullInfo;
 import starlight.backend.sponsor.model.response.SponsorKudosInfo;

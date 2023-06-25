@@ -1,4 +1,4 @@
-package starlight.backend;
+package starlight.backend.gateway;
 
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
@@ -10,7 +10,6 @@ import java.util.function.Predicate;
 public class RouteValidator {
 
     public static final List<String> openApiEndpoints = List.of(
-            "/h2/**",
             "/api-docs/**",
             "/swagger-resources/**",
             "/configuration/**",

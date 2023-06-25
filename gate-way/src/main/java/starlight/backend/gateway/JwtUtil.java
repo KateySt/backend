@@ -1,4 +1,4 @@
-package starlight.backend;
+package starlight.backend.gateway;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;

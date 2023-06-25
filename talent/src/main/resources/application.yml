@@ -26,4 +26,3 @@ logging:
         web:
           client:
             RestTemplate: DEBUG
-

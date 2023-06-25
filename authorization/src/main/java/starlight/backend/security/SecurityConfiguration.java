@@ -25,10 +25,10 @@ import static org.springframework.security.web.util.matcher.AntPathRequestMatche
 @AllArgsConstructor
 @Slf4j
 class SecurityConfiguration {
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(c -> c
-                .requestMatchers(antMatcher("/h2/**")).permitAll()
                 /////////////////////////OpenApi///////////////////////////////////////////////////
                 .requestMatchers(antMatcher("/api-docs/**")).permitAll()
                 .requestMatchers(antMatcher("/swagger-resources/**")).permitAll()
