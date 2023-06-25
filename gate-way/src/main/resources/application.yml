@@ -23,7 +23,7 @@ spring:
             - Path=/api/**
           filters:
             - AuthenticationFilter
-        - id: authorization
+        - id: auth
           uri: lb://AUTH
           predicates:
             - Path=/api/**
