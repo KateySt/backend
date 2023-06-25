@@ -1,5 +1,7 @@
 package starlight.backend.gateway;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -14,8 +16,8 @@ public class JwtUtil {
     private String secret;
 
 
-    public void validateToken(final String token) {
-        Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token);
+    public Jws<Claims> validateToken(final String token) {
+        return Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token);
     }
 
     private Key getSignKey() {

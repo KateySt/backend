@@ -10,14 +10,17 @@ import org.springframework.transaction.annotation.Transactional;
 import starlight.backend.exception.EmailAlreadyOccupiedException;
 import starlight.backend.exception.PageNotFoundException;
 import starlight.backend.exception.proof.InvalidStatusException;
+import starlight.backend.exception.user.UserNotFoundException;
 import starlight.backend.exception.user.talent.TalentNotFoundException;
 import starlight.backend.kudos.repository.KudosRepository;
 import starlight.backend.proof.ProofRepository;
+import starlight.backend.proof.model.entity.ProofEntity;
 import starlight.backend.proof.model.enums.Status;
 import starlight.backend.talent.MapperTalent;
 import starlight.backend.talent.model.entity.PositionEntity;
 import starlight.backend.talent.model.entity.TalentEntity;
 import starlight.backend.talent.model.request.NewUser;
+import starlight.backend.talent.model.request.TalentUpdateRequest;
 import starlight.backend.talent.model.response.Talent;
 import starlight.backend.talent.model.response.TalentFullInfo;
 import starlight.backend.talent.model.response.TalentPagePagination;
@@ -64,36 +67,33 @@ public class TalentServiceImpl implements TalentServiceInterface {
                 .orElseThrow(() -> new TalentNotFoundException(id));
     }
 
-    /*
-        @Override
-        public TalentFullInfo updateTalentProfile(long id, TalentUpdateRequest talentUpdateRequest, Authentication auth) {
-            if (checkingLoggedAndToken(id, auth)) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "you cannot change another talent");
-            }
-            return talentRepository.findById(id).map(talent -> {
-                talent.setFullName(validationField(
-                        talentUpdateRequest.fullName(),
-                        talent.getFullName()));
-                talent.setBirthday(talentUpdateRequest.avatar() == null ?
-                        talent.getBirthday() :
-                        talentUpdateRequest.birthday());
-                talent.setAvatar(validationField(
-                        talentUpdateRequest.avatar(),
-                        talent.getAvatar()));
-                talent.setEducation(validationField(
-                        talentUpdateRequest.education(),
-                        talent.getEducation()));
-                talent.setExperience(validationField(
-                        talentUpdateRequest.experience(),
-                        talent.getExperience()));
-                talent.setPositions(validationPosition(
-                        talent.getPositions(),
-                        talentUpdateRequest.positions()));
-                talentRepository.save(talent);
-                return talentMapper.toTalentFullInfo(talent);
-            }).orElseThrow(() -> new TalentNotFoundException(id));
-        }
-    */
+
+    @Override
+    public TalentFullInfo updateTalentProfile(long id, TalentUpdateRequest talentUpdateRequest) {
+        return talentRepository.findById(id).map(talent -> {
+            talent.setFullName(validationField(
+                    talentUpdateRequest.fullName(),
+                    talent.getFullName()));
+            talent.setBirthday(talentUpdateRequest.avatar() == null ?
+                    talent.getBirthday() :
+                    talentUpdateRequest.birthday());
+            talent.setAvatar(validationField(
+                    talentUpdateRequest.avatar(),
+                    talent.getAvatar()));
+            talent.setEducation(validationField(
+                    talentUpdateRequest.education(),
+                    talent.getEducation()));
+            talent.setExperience(validationField(
+                    talentUpdateRequest.experience(),
+                    talent.getExperience()));
+            talent.setPositions(validationPosition(
+                    talent.getPositions(),
+                    talentUpdateRequest.positions()));
+            talentRepository.save(talent);
+            return talentMapper.toTalentFullInfo(talent);
+        }).orElseThrow(() -> new TalentNotFoundException(id));
+    }
+
     private String validationField(String newParam, String lastParam) {
         return newParam == null ?
                 lastParam :
@@ -120,16 +120,13 @@ public class TalentServiceImpl implements TalentServiceInterface {
                 })
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-        //newPosition.addAll(talentPositions);
+        newPosition.addAll(talentPositions);
         return !newPosition.isEmpty() ? newPosition : talentPositions;
 //            TODO: add delete endpoint for delete positions
     }
 
-  /*  @Override
-    public void deleteTalentProfile(long talentId, Authentication auth) {
-        if (checkingLoggedAndToken(talentId, auth)) {
-            throw new UserAccesDeniedToDeleteThisUserException(talentId);
-        }
+    @Override
+    public void deleteTalentProfile(long talentId) {
         TalentEntity talent = talentRepository.findById(talentId)
                 .orElseThrow(() -> new UserNotFoundException(talentId));
         talent.getPositions().clear();
@@ -145,7 +142,7 @@ public class TalentServiceImpl implements TalentServiceInterface {
         }
         talent.getProofs().clear();
         talentRepository.deleteById(talent.getTalentId());
-    }*/
+    }
 
 
     @Override
@@ -165,7 +162,6 @@ public class TalentServiceImpl implements TalentServiceInterface {
             return talentMapper.toTalentListWithPaginationAndFilter(
                     new PageImpl<>(filteredTalents, PageRequest.of(skip, limit), filteredTalents.size())
             );
-
         }
         return talentMapper.toTalentListWithPaginationAndFilter(talentStream);
     }
@@ -194,9 +190,7 @@ public class TalentServiceImpl implements TalentServiceInterface {
 
     @Override
     public Talent getTalentByEmail(String email) {
-        log.info("email {}", email);
         var talent = talentRepository.findByEmail(email);
-        log.info("talent {}", talent);
         return talentMapper.toTalent(talent);
     }
 }

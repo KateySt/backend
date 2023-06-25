@@ -1,10 +1,8 @@
 package starlight.backend.gateway;
 
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-import java.util.function.Predicate;
+import java.util.List;
 
 @Component
 public class RouteValidator {
@@ -36,9 +34,9 @@ public class RouteValidator {
             "/api/v1/proofs/**",
             "/api/v1/sponsors/recovery-account"
     );
-    public Predicate<ServerHttpRequest> isSecured =
-            request -> openApiEndpoints
-                    .stream()
-                    .noneMatch(uri -> request.getURI().getPath().contains(uri));
+
+    public boolean isSecured(String url) {
+        return openApiEndpoints.stream().anyMatch(s -> s.equals(url));
+    }
 
 }

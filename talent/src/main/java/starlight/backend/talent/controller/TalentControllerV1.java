@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import starlight.backend.talent.model.request.TalentUpdateRequest;
 import starlight.backend.talent.model.response.TalentFullInfo;
 import starlight.backend.talent.model.response.TalentPagePagination;
 import starlight.backend.talent.service.TalentServiceInterface;
@@ -82,7 +83,7 @@ public class TalentControllerV1 {
         log.info("@GetMapping(\"/talents/{talent-id}\")");
         return talentService.talentFullInfo(talentId);
     }
-/*
+
     @Operation(
             summary = "Update talent by id",
             description = "Update a talent from id." +
@@ -105,13 +106,11 @@ public class TalentControllerV1 {
             @ApiResponse(responseCode = "404", description = "Not found"),
             @ApiResponse(responseCode = "409", description = "Conflict")
     })
-    @PreAuthorize("hasRole('TALENT') or hasRole('ADMIN')")
     @PatchMapping("/talents/{talent-id}")
     public TalentFullInfo updateTalentFullInfo(@PathVariable("talent-id") long talentId,
-                                               @RequestBody TalentUpdateRequest talentUpdateRequest,
-                                               Authentication auth) {
+                                               @RequestBody TalentUpdateRequest talentUpdateRequest) {
         log.info("@PatchMapping(\"/talents/{talent-id}\")");
-        return talentService.updateTalentProfile(talentId, talentUpdateRequest, auth);
+        return talentService.updateTalentProfile(talentId, talentUpdateRequest);
     }
 
     @Operation(summary = "Delete talent by id")
@@ -130,11 +129,9 @@ public class TalentControllerV1 {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "409", description = "Conflict")
     })
-    @PreAuthorize("hasRole('TALENT') or hasRole('ADMIN')")
     @DeleteMapping("/talents/{talent-id}")
-    public void deleteTalent(@PathVariable("talent-id") long talentId,
-                             Authentication auth) {
+    public void deleteTalent(@PathVariable("talent-id") long talentId) {
         log.info("@DeleteMapping(\"/talents/{talent-id}\")");
-        talentService.deleteTalentProfile(talentId, auth);
-    }*/
+        talentService.deleteTalentProfile(talentId);
+    }
 }

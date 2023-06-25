@@ -1,6 +1,7 @@
 package starlight.backend.talent.service;
 
 import starlight.backend.talent.model.request.NewUser;
+import starlight.backend.talent.model.request.TalentUpdateRequest;
 import starlight.backend.talent.model.response.Talent;
 import starlight.backend.talent.model.response.TalentFullInfo;
 import starlight.backend.talent.model.response.TalentPagePagination;
@@ -11,9 +12,9 @@ public interface TalentServiceInterface {
 
     TalentFullInfo talentFullInfo(long id);
 
-    //  TalentFullInfo updateTalentProfile(long id, TalentUpdateRequest talentUpdateRequest, Authentication auth);
+    TalentFullInfo updateTalentProfile(long id, TalentUpdateRequest talentUpdateRequest);
 
-    // void deleteTalentProfile(long talentId, Authentication auth);
+    void deleteTalentProfile(long talentId);
 
     TalentPagePaginationWithFilterSkills talentPaginationWithFilter(String filter, int skip, int limit);
 
