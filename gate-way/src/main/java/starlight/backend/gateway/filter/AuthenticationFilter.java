@@ -1,4 +1,4 @@
-package starlight.backend.gateway;
+package starlight.backend.gateway.filter;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -11,6 +11,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
+import starlight.backend.gateway.jwt.JwtUtil;
+import starlight.backend.gateway.route.RouteValidator;
+import starlight.backend.gateway.enums.Role;
+import starlight.backend.gateway.enums.SponsorStatus;
 
 
 @Component
@@ -30,6 +34,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Override
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
+            log.info("rr====>{}",exchange.getRequest().getPath());
             if (!validator.isSecured(exchange.getRequest().getPath().toString())) {
 
                 if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
@@ -44,14 +49,14 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
                 Claims claims = claimsJws.getBody();
 
                 String role = claims.get("role", String.class);
-                if (role == null || (!role.equals("ROLE_ADMIN")
-                        && !role.equals("ROLE_TALENT")
-                        && !role.equals("ROLE_SPONSOR"))) {
+                if (role == null || (!role.equals(Role.ADMIN.getAuthority())
+                        && !role.equals(Role.TALENT.getAuthority())
+                        && !role.equals(Role.SPONSOR.getAuthority()))) {
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid role");
                 }
 
                 String status = claims.get("status", String.class);
-                if (status == null || !status.equals("ACTIVE")) {
+                if (status == null || !status.equals(SponsorStatus.ACTIVE.name())){
                     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Invalid status");
                 }
 
@@ -64,12 +69,11 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
                 String id = claims.get("sub", String.class);
                 if (((!exchange.getRequest().getPath().toString().equals("/api/v1/talents/" + id))
-                        || !role.equals("ROLE_TALENT"))
+                        || !role.equals(Role.TALENT.getAuthority()))
                         && (exchange.getRequest().getMethod() == HttpMethod.PATCH
                         || exchange.getRequest().getMethod() == HttpMethod.DELETE)) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you cannot change profile another talent!!");
                 }
-
             }
             return chain.filter(exchange);
         });

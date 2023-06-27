@@ -1,4 +1,4 @@
-package starlight.backend.gateway;
+package starlight.backend.gateway.route;
 
 import org.springframework.stereotype.Component;
 

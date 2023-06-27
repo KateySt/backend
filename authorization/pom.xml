@@ -18,7 +18,13 @@
         <springdoc.openapi.starter.webmvc.ui>2.1.0</springdoc.openapi.starter.webmvc.ui>
         <org.mapstruct.version>1.5.3.Final</org.mapstruct.version>
         <org.projectlombok.version>1.18.26</org.projectlombok.version>
+        <maven-compiler-plugin>3.10.1</maven-compiler-plugin>
+        <lombok-mapstruct-binding>0.2.0</lombok-mapstruct-binding>
+        <jjwt-jackson>0.11.5</jjwt-jackson>
+        <jjwt-impl>0.11.5</jjwt-impl>
+        <jjwt-api>0.11.5</jjwt-api>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.springdoc</groupId>
@@ -28,17 +34,17 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
-            <version>0.11.5</version>
+            <version>${jjwt-api}</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
-            <version>0.11.5</version>
+            <version>${jjwt-impl}</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
-            <version>0.11.5</version>
+            <version>${jjwt-jackson}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -81,7 +87,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>${maven-compiler-plugin}</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
@@ -99,7 +105,7 @@
                         <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok-mapstruct-binding</artifactId>
-                            <version>0.2.0</version>
+                            <version>${lombok-mapstruct-binding}</version>
                         </path>
                     </annotationProcessorPaths>
                 </configuration>

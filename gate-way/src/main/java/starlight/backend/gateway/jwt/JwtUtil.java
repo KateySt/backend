@@ -1,4 +1,4 @@
-package starlight.backend.gateway;
+package starlight.backend.gateway.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

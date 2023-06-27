@@ -15,7 +15,7 @@ import starlight.backend.security.MapperSecurity;
 import starlight.backend.security.model.UserDetailsImpl;
 import starlight.backend.security.model.request.NewUser;
 import starlight.backend.security.model.response.SessionInfo;
-import starlight.backend.security.service.JwtService;
+import starlight.backend.security.service.JwtServiceInterface;
 import starlight.backend.security.service.SecurityServiceInterface;
 import starlight.backend.user.model.entity.RoleEntity;
 import starlight.backend.user.model.entity.UserEntity;
@@ -38,7 +38,7 @@ public class SecurityServiceImpl implements SecurityServiceInterface {
     private RoleRepository roleRepository;
     private AdminRepository adminRepository;
     private RestTemplate restTemplate;
-    private JwtService jwtService;
+    private JwtServiceInterface jwtService;
 
     @Override
     public SessionInfo loginInfo(HttpServletRequest request) {
