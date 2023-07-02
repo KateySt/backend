@@ -1,6 +1,47 @@
 package starlight.backend.proof.service.impl;
 
-/*
+
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import starlight.backend.exception.PageNotFoundException;
+import starlight.backend.exception.proof.InvalidStatusException;
+import starlight.backend.exception.proof.ProofNotFoundException;
+import starlight.backend.exception.proof.UserCanNotEditProofNotInDraftException;
+import starlight.backend.exception.user.UserNotFoundException;
+import starlight.backend.exception.user.talent.TalentNotFoundException;
+import starlight.backend.kudos.model.entity.KudosEntity;
+import starlight.backend.kudos.repository.KudosRepository;
+import starlight.backend.proof.ProofMapper;
+import starlight.backend.proof.ProofRepository;
+import starlight.backend.proof.model.entity.ProofEntity;
+import starlight.backend.proof.model.enums.Status;
+import starlight.backend.proof.model.request.ProofAddRequest;
+import starlight.backend.proof.model.request.ProofAddWithSkillsRequest;
+import starlight.backend.proof.model.request.ProofUpdateRequest;
+import starlight.backend.proof.model.response.ProofFullInfo;
+import starlight.backend.proof.model.response.ProofFullInfoWithSkills;
+import starlight.backend.proof.model.response.ProofPagePagination;
+import starlight.backend.proof.model.response.ProofPagePaginationWithSkills;
+import starlight.backend.proof.service.ProofServiceInterface;
+import starlight.backend.skill.service.SkillServiceInterface;
+import starlight.backend.talent.repository.TalentRepository;
+import starlight.backend.talent.service.TalentServiceInterface;
+
+import java.net.URI;
+import java.time.Instant;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.regex.Pattern;
+
 @AllArgsConstructor
 @Service
 @Transactional
@@ -36,12 +77,8 @@ public class ProofServiceImpl implements ProofServiceInterface {
 
     @Override
     public ResponseEntity<?> getLocationForAddProofWithSkill(long talentId,
-                                                             ProofAddWithSkillsRequest proofAddWithSkillsRequest,
-                                                             Authentication auth) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
-            throw new UserAccesDeniedToProofException();
-        }
-        long proofId = addProofProfileWithSkill(talentId, proofAddWithSkillsRequest, auth);
+                                                             ProofAddWithSkillsRequest proofAddWithSkillsRequest) {
+        long proofId = addProofProfileWithSkill(talentId, proofAddWithSkillsRequest);
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{proof-id}")
@@ -52,9 +89,7 @@ public class ProofServiceImpl implements ProofServiceInterface {
 
     @Override
     public long addProofProfileWithSkill(long talentId,
-                                         ProofAddWithSkillsRequest proofAddWithSkillsRequest,
-                                         Authentication auth) {
-
+                                         ProofAddWithSkillsRequest proofAddWithSkillsRequest) {
         var talent = talentRepository.findById(talentId)
                 .orElseThrow(() -> new ProofNotFoundException(talentId));
         talent.setTalentSkills(skillService.existsSkill(
@@ -81,13 +116,13 @@ public class ProofServiceImpl implements ProofServiceInterface {
 
     @Override
     @Transactional(readOnly = true)
-    public ProofPagePagination getTalentAllProofsWithKudoses(Authentication auth, long talentId,
+    public ProofPagePagination getTalentAllProofsWithKudoses(long talentId,
                                                              int page, int size, boolean sort, String status) {
-        if (!talentService.checkingLoggedAndToken(talentId, auth)) {
+       /* if (!talentService.checkingLoggedAndToken(talentId, auth)) {
             Page<ProofEntity> pageRequest = getPaginationForTheTalent(talentId, page, size, sort, status);
             return mapper.toProofPagePaginationWithProofFullInfoWithKudoses(pageRequest);
-        }
-        var pageRequest = getPaginationForTheTalent(talentId, page,
+        }*/
+        Page<ProofEntity> pageRequest = getPaginationForTheTalent(talentId, page,
                 size, sort, Status.PUBLISHED.name());
 
         return mapper.toProofPagePaginationWithProofFullInfoWithKudoses(pageRequest);
@@ -108,11 +143,10 @@ public class ProofServiceImpl implements ProofServiceInterface {
 
     @Override
     public ResponseEntity<?> getLocation(long talentId,
-                                         ProofAddRequest proofAddRequest,
-                                         Authentication auth) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
+                                         ProofAddRequest proofAddRequest) {
+      /*  if (talentService.checkingLoggedAndToken(talentId, auth)) {
             throw new UserAccesDeniedToProofException();
-        }
+        }*/
         long proofId = addProofProfile(talentId, proofAddRequest).getProofId();
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -123,10 +157,10 @@ public class ProofServiceImpl implements ProofServiceInterface {
     }
 
     @Override
-    public ProofFullInfo proofUpdateRequest(long talentId, long id, ProofUpdateRequest proofUpdateRequest, Authentication auth) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
+    public ProofFullInfo proofUpdateRequest(long talentId, long id, ProofUpdateRequest proofUpdateRequest) {
+        /*if (talentService.checkingLoggedAndToken(talentId, auth)) {
             throw new UserAccesDeniedToProofException();
-        }
+        }*/
         if (!repository.existsByTalent_TalentIdAndProofId(talentId, id)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "don`t have that talent");
         }
@@ -180,16 +214,15 @@ public class ProofServiceImpl implements ProofServiceInterface {
     }
 
     @Override
-    public void deleteProof(long talentId, long proofId, Authentication auth) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
+    public void deleteProof(long talentId, long proofId) {
+       /* if (talentService.checkingLoggedAndToken(talentId, auth)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "you cannot delete proof another talent");
-        }
+        }*/
         ProofEntity proof = repository.findById(proofId)
                 .orElseThrow(() -> new ProofNotFoundException(proofId));
         proof.setTalent(null);
         for (KudosEntity kudos : kudosRepository.findByProof_ProofId(proofId)) {
             kudos.setProof(null);
-            kudos.setOwner(null);
             kudosRepository.deleteById(kudos.getKudosId());
         }
         proof.getKudos().clear();
@@ -197,13 +230,13 @@ public class ProofServiceImpl implements ProofServiceInterface {
     }
 
     @Override
-    public ProofPagePagination getTalentAllProofs(Authentication auth, long talentId,
+    public ProofPagePagination getTalentAllProofs(long talentId,
                                                   int page, int size, boolean sort, String status) {
         isStatusCorrect(status);
-        if (!talentService.checkingLoggedAndToken(talentId, auth)) {
+       /* if (!talentService.checkingLoggedAndToken(talentId, auth)) {
             Page<ProofEntity> pageRequest = getPaginationForTheTalent(talentId, page, size, sort, status);
             return mapper.toProofPagePagination(pageRequest);
-        }
+        }*/
         var pageRequest = getPaginationForTheTalent(talentId, page,
                 size, sort, Status.PUBLISHED.name());
         return mapper.toProofPagePagination(pageRequest);
@@ -211,13 +244,13 @@ public class ProofServiceImpl implements ProofServiceInterface {
 
     @Override
     @Transactional(readOnly = true)
-    public ProofPagePaginationWithSkills getTalentAllProofsWithSkills(Authentication auth, long talentId,
+    public ProofPagePaginationWithSkills getTalentAllProofsWithSkills(long talentId,
                                                                       int page, int size, boolean sort, String status) {
         isStatusCorrect(status);
-        if (!talentService.checkingLoggedAndToken(talentId, auth)) {
+       /* if (!talentService.checkingLoggedAndToken(talentId, auth)) {
             Page<ProofEntity> pageRequest = getPaginationForTheTalent(talentId, page, size, sort, status);
             return mapper.toProofPagePaginationWithSkills(pageRequest);
-        }
+        }*/
         var pageRequest = getPaginationForTheTalent(talentId, page,
                 size, sort, Status.PUBLISHED.name());
         return mapper.toProofPagePaginationWithSkills(pageRequest);
@@ -235,28 +268,28 @@ public class ProofServiceImpl implements ProofServiceInterface {
     }
 
     @Override
-    public ProofFullInfo getProofFullInfo(Authentication auth, long proofId) {
+    public ProofFullInfo getProofFullInfo(long proofId) {
         ProofEntity proof = repository.findById(proofId)
                 .orElseThrow(() -> new ProofNotFoundException(proofId));
         var talentId = proof.getTalent().getTalentId();
-        if (!talentService.checkingLoggedAndToken(talentId, auth)) {
+       /* if (!talentService.checkingLoggedAndToken(talentId, auth)) {
             return mapper.toProofFullInfo(proof);
         } else if (proof.getStatus().equals(Status.PUBLISHED)) {
             return mapper.toProofFullInfo(proof);
-        }
+        }*/
         throw new ProofNotFoundException(proofId);
     }
 
     @Override
-    public ProofFullInfoWithSkills getProofFullInfoWithSkills(Authentication auth, long proofId) {
+    public ProofFullInfoWithSkills getProofFullInfoWithSkills(long proofId) {
         ProofEntity proof = repository.findById(proofId)
                 .orElseThrow(() -> new ProofNotFoundException(proofId));
         var talentId = proof.getTalent().getTalentId();
-        if (!talentService.checkingLoggedAndToken(talentId, auth)) {
+       /* if (!talentService.checkingLoggedAndToken(talentId, auth)) {
             return mapper.toProofFullInfoWithSkills(proof);
         } else if (proof.getStatus().equals(Status.PUBLISHED)) {
             return mapper.toProofFullInfoWithSkills(proof);
-        }
+        }*/
         throw new ProofNotFoundException(proofId);
     }
 
@@ -276,5 +309,5 @@ public class ProofServiceImpl implements ProofServiceInterface {
             throw new InvalidStatusException(status);
         }
     }
-}*/
+}
 

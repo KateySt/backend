@@ -1,8 +1,11 @@
 package starlight.backend.kudos.service;
 
-/*
-public interface KudosServiceInterface {
-    KudosOnProof getKudosOnProof(long proofId, Authentication auth);
 
-    KudosEntity addKudosOnProof(long proofId, int kudosRequest, Authentication auth);
-}*/
+import starlight.backend.kudos.model.entity.KudosEntity;
+import starlight.backend.kudos.model.response.KudosOnProof;
+
+public interface KudosServiceInterface {
+    KudosOnProof getKudosOnProof(long proofId);
+
+    KudosEntity addKudosOnProof(long proofId, int kudosRequest);
+}

@@ -6,5 +6,6 @@ import starlight.backend.admin.model.emtity.AdminEntity;
 
 @Repository
 public interface AdminRepository extends JpaRepository<AdminEntity, Long> {
+    boolean existsByAdminId(Long adminId);
     boolean existsByEmail(String email);
 }

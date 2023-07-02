@@ -45,11 +45,6 @@ public class TalentServiceImpl implements TalentServiceInterface {
     private ProofRepository proofRepository;
     private final String filterParam = "talentId";
 
-    /*  @Override
-      public boolean checkingLoggedAndToken(long userId, Authentication auth) {
-          return !Objects.equals(auth.getName(), String.valueOf(userId));
-      }
-  */
     @Override
     public TalentPagePagination talentPagination(int page, int size) {
         var pageRequest = talentRepository.findAll(
@@ -192,5 +187,10 @@ public class TalentServiceImpl implements TalentServiceInterface {
     public Talent getTalentByEmail(String email) {
         var talent = talentRepository.findByEmail(email);
         return talentMapper.toTalent(talent);
+    }
+
+    @Override
+    public boolean isTalentExistedById(long talentId) {
+        return talentRepository.existsByTalentId(talentId);
     }
 }

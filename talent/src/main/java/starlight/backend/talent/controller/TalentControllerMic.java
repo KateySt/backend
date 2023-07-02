@@ -25,4 +25,9 @@ public class TalentControllerMic {
         log.info("@GetMapping(\"/talent\")");
         return talentService.getTalentByEmail(email);
     }
+    @GetMapping("/talent/{talent-id}")
+    public boolean isTalentExistedById(@PathVariable("talent-id") long talentId) {
+        log.info("@GetMapping(\"/talent\")");
+        return talentService.isTalentExistedById(talentId);
+    }
 }

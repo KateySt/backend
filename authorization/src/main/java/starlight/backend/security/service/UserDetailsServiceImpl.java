@@ -29,7 +29,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         );
         if (userRepository.existsByAdmin_Email(email)) {
             return mapper.toUserDetailsImplAdmin(userRepository.findByAdmin_Email(email));
-        } else if (talent.email() != null) {
+        } else if (talent != null) {
             var user = userRepository.findByTalentId(talent.talent_id());
             return mapper.toUserDetailsImplTalent(talent, user);
         } else {

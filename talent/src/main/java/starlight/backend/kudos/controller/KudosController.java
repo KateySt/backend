@@ -1,6 +1,23 @@
 package starlight.backend.kudos.controller;
 
-/*
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import starlight.backend.exception.proof.ProofNotFoundException;
+import starlight.backend.kudos.model.entity.KudosEntity;
+import starlight.backend.kudos.model.response.KudosOnProof;
+import starlight.backend.kudos.service.KudosServiceInterface;
+
 @AllArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1")
@@ -27,11 +44,10 @@ public class KudosController {
             )
     })
     @GetMapping("/proofs/{proof-id}/kudos")
-    public KudosOnProof getKudosOnProof(@PathVariable("proof-id") long proofId,
-                                        Authentication auth) {
+    public KudosOnProof getKudosOnProof(@PathVariable("proof-id") long proofId) {
         log.info("@GetMapping(\"/proofs/{proof-id}/kudos\")");
         log.info("Getting proof-id = {}", proofId);
-        return kudosService.getKudosOnProof(proofId, auth);
+        return kudosService.getKudosOnProof(proofId);
     }
 
 
@@ -64,10 +80,9 @@ public class KudosController {
     @PostMapping("/proofs/{proof-id}/kudos")
     @ResponseStatus(HttpStatus.CREATED)
     public KudosEntity addKudos(@PathVariable("proof-id") long proofId,
-                                @RequestParam int kudos,
-                                Authentication auth) {
+                                @RequestParam int kudos) {
         log.info("@PostMapping(\"/proofs/{proof-id}/kudos\")");
         log.info("Getting proof-id = {}", proofId);
-        return kudosService.addKudosOnProof(proofId, kudos, auth);
+        return kudosService.addKudosOnProof(proofId, kudos);
     }
-}*/
+}

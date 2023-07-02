@@ -1,7 +1,20 @@
 package starlight.backend.kudos.service.impl;
 
 
-/*
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import starlight.backend.exception.kudos.KudosRequestMustBeNotZeroException;
+import starlight.backend.exception.proof.ProofNotFoundException;
+import starlight.backend.kudos.model.entity.KudosEntity;
+import starlight.backend.kudos.model.response.KudosOnProof;
+import starlight.backend.kudos.repository.KudosRepository;
+import starlight.backend.kudos.service.KudosServiceInterface;
+import starlight.backend.proof.ProofRepository;
+import starlight.backend.talent.repository.TalentRepository;
+import starlight.backend.talent.service.TalentServiceInterface;
+
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -12,23 +25,20 @@ public class KudosServiceImpl implements KudosServiceInterface {
     private TalentRepository talentRepository;
     private TalentServiceInterface talentService;
 
-    private boolean isProofAlreadyHaveKudosFromUser(long proofId, Authentication auth) {
+    private boolean isProofAlreadyHaveKudosFromUser(long proofId, long sponsorId) {
         var proof = proofRepository.findById(proofId)
                 .orElseThrow(() -> new ProofNotFoundException(proofId));
-       var kudosList = proof.getKudos()
+        var kudosList = proof.getKudos()
                 .stream()
-                .filter(k -> k.getOwner()
-                        .getSponsorId()
-                        .toString()
-                        .equals(auth.getName()))
+                .filter(k -> k.getSponsorId()
+                        .equals(sponsorId))
                 .toList();
         return !kudosList.isEmpty();
-        return false;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public KudosOnProof getKudosOnProof(long proofId, Authentication auth) {
+    public KudosOnProof getKudosOnProof(long proofId) {
         var proof = proofRepository.findById(proofId)
                 .orElseThrow(() -> new ProofNotFoundException(proofId));
         var kudos = proof.getKudos();
@@ -37,33 +47,33 @@ public class KudosServiceImpl implements KudosServiceInterface {
                 .mapToInt(KudosEntity::getCountKudos)
                 .sum();
         log.info("countKudos = {}", countKudos);
-        if (auth != null) {
-            for (GrantedAuthority grantedAuthority : auth.getAuthorities()) {
-                if (grantedAuthority.getAuthority().equals(Role.SPONSOR.getAuthority()) &&
-                        securityService.isSponsorActive(auth)) {
-                    log.info("Is Sponsor = {}", grantedAuthority.getAuthority().equals(Role.SPONSOR.getAuthority()));
-                    var kudosFromMeList = kudos.stream()
-                            .filter(k -> k.getOwner()
-                                    .getSponsorId()
-                                    .toString()
-                                    .equals(auth.getName()))
-                            .toList();
-                    int kudosFromMe;
-                    if (kudosFromMeList.isEmpty()) {
-                        kudosFromMe = 0;
-                    } else {
-                        kudosFromMe = kudosFromMeList.stream()
-                                .mapToInt(KudosEntity::getCountKudos)
-                                .sum();
-                    }
-                    return KudosOnProof.builder()
-                            .kudosOnProof(countKudos)
-                            .isKudosed(isProofAlreadyHaveKudosFromUser(proofId, auth))
-                            .kudosFromMe(kudosFromMe)
-                            .build();
+
+       /* for (GrantedAuthority grantedAuthority : auth.getAuthorities()) {
+            if (grantedAuthority.getAuthority().equals(Role.SPONSOR.getAuthority()) &&
+                    securityService.isSponsorActive(auth)) {
+                log.info("Is Sponsor = {}", grantedAuthority.getAuthority().equals(Role.SPONSOR.getAuthority()));
+                var kudosFromMeList = kudos.stream()
+                        .filter(k -> k.getOwner()
+                                .getSponsorId()
+                                .toString()
+                                .equals(auth.getName()))
+                        .toList();
+                int kudosFromMe;
+                if (kudosFromMeList.isEmpty()) {
+                    kudosFromMe = 0;
+                } else {
+                    kudosFromMe = kudosFromMeList.stream()
+                            .mapToInt(KudosEntity::getCountKudos)
+                            .sum();
                 }
+                return KudosOnProof.builder()
+                        .kudosOnProof(countKudos)
+                        .isKudosed(isProofAlreadyHaveKudosFromUser(proofId, auth))
+                        .kudosFromMe(kudosFromMe)
+                        .build();
             }
-        }
+        }*/
+
         return KudosOnProof.builder()
                 .kudosOnProof(countKudos)
                 .kudosFromMe(0)
@@ -72,7 +82,7 @@ public class KudosServiceImpl implements KudosServiceInterface {
     }
 
     @Override
-    public KudosEntity addKudosOnProof(long proofId, int kudosRequest, Authentication auth) {
+    public KudosEntity addKudosOnProof(long proofId, int kudosRequest) {
         /*if (tal.isSponsorActive(auth)) {
             throw new YouAreInDeletingProcess();
         }
@@ -83,11 +93,11 @@ public class KudosServiceImpl implements KudosServiceInterface {
             if (!grantedAuthority.getAuthority().equals(Role.SPONSOR.getAuthority())) {
                 throw new TalentCanNotAddKudos();
             }
-        }
+        }*/
         if (kudosRequest == 0) {
             throw new KudosRequestMustBeNotZeroException();
         }
-        var proof = proofRepository.findById(proofId)
+       /* var proof = proofRepository.findById(proofId)
                 .orElseThrow(() -> new ProofNotFoundException(proofId));
         var owner = sponsorRepository.findById(Long.valueOf(auth.getName()))
                 .orElseThrow(() -> new UserNotFoundException(auth.getName()));
@@ -97,11 +107,11 @@ public class KudosServiceImpl implements KudosServiceInterface {
         var follower = talentRepository.findById(proof.getTalent().getTalentId())
                 .orElseThrow(() -> new UserNotFoundException(auth.getName()));
         updateSponsorUnusedKudos(owner, kudosRequest);
-        return updateSponsorKudosField(proof, follower, owner, kudosRequest, proofId);
+        return updateSponsorKudosField(proof, follower, owner, kudosRequest, proofId);*/
         return null;
     }
 
-    private void updateSponsorUnusedKudos(SponsorEntity owner, int kudosRequest) {
+    /*private void updateSponsorUnusedKudos(SponsorEntity owner, int kudosRequest) {
         sponsorRepository.findById(owner.getSponsorId()).map(sponsor -> {
             sponsor.setUnusedKudos(owner.getUnusedKudos() - kudosRequest);
             sponsorRepository.save(sponsor);
@@ -136,5 +146,5 @@ public class KudosServiceImpl implements KudosServiceInterface {
             kudosRepository.delete(kudos);
         }
         return kudos;
-    }
-}*/
+    }*/
+}

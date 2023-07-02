@@ -6,4 +6,5 @@ import starlight.backend.kudos.model.entity.KudosEntity;
 
 @Repository
 public interface KudosRepository extends JpaRepository<KudosEntity, Long> {
+    KudosEntity[] findByProof_ProofId(long proofId);
 }

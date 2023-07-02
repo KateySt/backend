@@ -1,6 +1,27 @@
 package starlight.backend.proof.controller;
 
-/*
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import starlight.backend.proof.model.request.ProofAddRequest;
+import starlight.backend.proof.model.request.ProofUpdateRequest;
+import starlight.backend.proof.model.response.ProofFullInfo;
+import starlight.backend.proof.model.response.ProofPagePagination;
+import starlight.backend.proof.service.ProofServiceInterface;
+
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -53,15 +74,12 @@ public class ProofControllerV1 {
             @ApiResponse(responseCode = "404", description = "Not found"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-
-    @PreAuthorize("hasRole('TALENT') or hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/talents/{talent-id}/proofs")
     public ResponseEntity<?> addProofFullInfo(@PathVariable("talent-id") long talentId,
-                                              @RequestBody ProofAddRequest proofAddRequest,
-                                              Authentication auth) {
+                                              @RequestBody ProofAddRequest proofAddRequest) {
         log.info("@PostMapping(\"/talents/{talent-id}/proofs\")");
-        return proofService.getLocation(talentId, proofAddRequest, auth);
+        return proofService.getLocation(talentId, proofAddRequest);
     }
 
     @Operation(summary = "Delete proof by proof_id and talent_id")
@@ -74,13 +92,11 @@ public class ProofControllerV1 {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "409", description = "Conflict")
     })
-    @PreAuthorize("hasRole('TALENT') or hasRole('ADMIN')")
     @DeleteMapping("/talents/{talent-id}/proofs/{proof-id}")
     public void deleteTalent(@PathVariable("talent-id") long talentId,
-                             @PathVariable("proof-id") long proofId,
-                             Authentication auth) {
+                             @PathVariable("proof-id") long proofId) {
         log.info("@DeleteMapping(\"/talents/{talent-id}/proofs/{proof-id}\")");
-        proofService.deleteProof(talentId, proofId, auth);
+        proofService.deleteProof(talentId, proofId);
     }
 
     @Operation(
@@ -107,13 +123,11 @@ public class ProofControllerV1 {
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @PatchMapping("/talents/{talent-id}/proofs/{proof-id}")
-    @PreAuthorize("hasRole('TALENT') or hasRole('ADMIN')")
     public ProofFullInfo updateProofFullInfo(@PathVariable("talent-id") long talentId,
                                              @PathVariable("proof-id") long proofId,
-                                             @RequestBody ProofUpdateRequest proofUpdateRequest,
-                                             Authentication auth) {
+                                             @RequestBody ProofUpdateRequest proofUpdateRequest) {
         log.info("@PatchMapping(\"/talents/{talent-id}/proofs/{proof-id}\")");
-        return proofService.proofUpdateRequest(talentId, proofId, proofUpdateRequest, auth);
+        return proofService.proofUpdateRequest(talentId, proofId, proofUpdateRequest);
     }
 
     @Operation(summary = "Return list of all proofs for talent by talent_id")
@@ -134,13 +148,12 @@ public class ProofControllerV1 {
     })
     @GetMapping("/talents/{talent-id}/proofs")
     public ProofPagePagination getTalentProofs(@PathVariable("talent-id") long talentId,
-                                               Authentication auth,
                                                @RequestParam(defaultValue = "0") @Min(0) int page,
                                                @RequestParam(defaultValue = "5") @Positive int size,
                                                @RequestParam(defaultValue = "true") boolean sort,
                                                @RequestParam(defaultValue = "ALL") String status) {
         log.info("@GetMapping(\"/talents/{talent-id}/proofs\")");
-        return proofService.getTalentAllProofs(auth, talentId, page, size, sort, status);
+        return proofService.getTalentAllProofs(talentId, page, size, sort, status);
     }
 
     @Operation(summary = "Return Proof information for an authenticated user")
@@ -160,10 +173,8 @@ public class ProofControllerV1 {
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/proofs/{proof-id}")
-    public ProofFullInfo getFullProof(@PathVariable("proof-id") long proofId,
-                                      Authentication auth) {
+    public ProofFullInfo getFullProof(@PathVariable("proof-id") long proofId) {
         log.info("@GetMapping(\"/proofs/{proof-id}\")");
-        return proofService.getProofFullInfo(auth, proofId);
+        return proofService.getProofFullInfo(proofId);
     }
 }
-*/

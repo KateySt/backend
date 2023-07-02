@@ -23,5 +23,6 @@ public interface TalentServiceInterface {
     Talent saveTalent(NewUser user);
 
     Talent getTalentByEmail(String email);
-    // boolean checkingLoggedAndToken(long userId, Authentication auth);
+
+    boolean isTalentExistedById(long talentId);
 }

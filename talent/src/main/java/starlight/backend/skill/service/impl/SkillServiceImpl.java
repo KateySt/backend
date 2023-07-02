@@ -4,24 +4,35 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import starlight.backend.exception.proof.ProofNotFoundException;
+import starlight.backend.exception.proof.UserCanNotEditProofNotInDraftException;
+import starlight.backend.exception.skill.SkillNotFoundException;
+import starlight.backend.exception.user.UserNotFoundException;
+import starlight.backend.exception.user.talent.TalentNotFoundException;
 import starlight.backend.proof.ProofMapper;
 import starlight.backend.proof.ProofRepository;
+import starlight.backend.proof.model.entity.ProofEntity;
+import starlight.backend.proof.model.enums.Status;
+import starlight.backend.proof.model.response.ProofListWithSkills;
+import starlight.backend.proof.model.response.ProofWithSkills;
 import starlight.backend.skill.SkillMapper;
 import starlight.backend.skill.model.entity.SkillEntity;
+import starlight.backend.skill.model.request.AddSkill;
+import starlight.backend.skill.model.request.DeleteIdSkills;
 import starlight.backend.skill.model.response.SkillList;
 import starlight.backend.skill.model.response.SkillListWithPagination;
 import starlight.backend.skill.repository.SkillRepository;
 import starlight.backend.skill.service.SkillServiceInterface;
+import starlight.backend.talent.model.response.TalentWithSkills;
 import starlight.backend.talent.repository.TalentRepository;
 import starlight.backend.talent.service.TalentServiceInterface;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -58,13 +69,9 @@ public class SkillServiceImpl implements SkillServiceInterface {
                 .toList();
         return skillMapper.toSkillListWithPagination(sortedSkills, skillRepository.count());
     }
-/*
+
     @Override
-    public ProofWithSkills addSkillInYourProof(long talentId, long proofId,
-                                               Authentication auth, AddSkill skills) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
-            throw new UserAccesDeniedToProofException();
-        }
+    public ProofWithSkills addSkillInYourProof(long talentId, long proofId, AddSkill skills) {
         if (!proofRepository.existsByTalent_TalentIdAndProofId(talentId, proofId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "don`t have that talent");
         }
@@ -80,7 +87,7 @@ public class SkillServiceImpl implements SkillServiceInterface {
             proofRepository.save(proof);
         }
         return skillMapper.toProofWithSkills(proof);
-    }*/
+    }
 
     @Override
     public SkillList getListSkillsOfProof(long proofId) {
@@ -109,12 +116,9 @@ public class SkillServiceImpl implements SkillServiceInterface {
                 skillRepository.findBySkillIgnoreCase(skill) :
                 null;
     }
-/*
+
     @Override
-    public void deleteSkill(long talentId, long proofId, long skillId, Authentication auth) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
-            throw new UserAccesDeniedToProofException();
-        }
+    public void deleteSkill(long talentId, long proofId, long skillId) {
         if (!skillRepository.existsBySkillIdAndProofs_ProofIdAndProofs_Talent_TalentId(skillId, proofId, talentId)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "don`t found skill by talentId and proofId!");
         }
@@ -126,10 +130,7 @@ public class SkillServiceImpl implements SkillServiceInterface {
     }
 
     @Override
-    public void deleteSkillArray(long talentId, long proofId, DeleteIdSkills deleteSkillId, Authentication auth) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
-            throw new UserAccesDeniedToProofException();
-        }
+    public void deleteSkillArray(long talentId, long proofId, DeleteIdSkills deleteSkillId) {
         for (long skillId : deleteSkillId.skillsId()) {
             if (!skillRepository.existsBySkillIdAndProofs_ProofIdAndProofs_Talent_TalentId(skillId, proofId, talentId)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "don`t found skill by talentId and proofId!");
@@ -143,10 +144,7 @@ public class SkillServiceImpl implements SkillServiceInterface {
     }
 
     @Override
-    public void deleteSkills(long talentId, DeleteIdSkills deleteSkillId, Authentication auth) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
-            throw new UserCanNotEditThisProfile(talentId);
-        }
+    public void deleteSkills(long talentId, DeleteIdSkills deleteSkillId) {
         for (long skillId : deleteSkillId.skillsId()) {
             if (!talentRepository.existsByTalentSkills_SkillId(skillId)) {
                 throw new SkillNotFoundException(skillId);
@@ -160,10 +158,7 @@ public class SkillServiceImpl implements SkillServiceInterface {
     }
 
     @Override
-    public TalentWithSkills addSkillToTalent(long talentId, AddSkill skills, Authentication auth) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
-            throw new UserAccesDeniedToProofException();
-        }
+    public TalentWithSkills addSkillToTalent(long talentId, AddSkill skills) {
         var talent = talentRepository.findById(talentId)
                 .orElseThrow(() -> new TalentNotFoundException(talentId));
         talent.setTalentSkills(existsSkill(
@@ -174,10 +169,7 @@ public class SkillServiceImpl implements SkillServiceInterface {
     }
 
     @Override
-    public ProofWithSkills addSkillInYourProofV2(long talentId, long proofId, Authentication auth, AddSkill skills) {
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
-            throw new UserAccesDeniedToProofException();
-        }
+    public ProofWithSkills addSkillInYourProofV2(long talentId, long proofId, AddSkill skills) {
         var proof = proofRepository.findById(proofId)
                 .orElseThrow(() -> new ProofNotFoundException(proofId));
         var talent = talentRepository.findById(talentId)
@@ -198,7 +190,7 @@ public class SkillServiceImpl implements SkillServiceInterface {
     }
 
     @Override
-    public TalentWithSkills getListSkillsOfTalent(long talentId, Authentication auth) {
+    public TalentWithSkills getListSkillsOfTalent(long talentId) {
         var talent = talentRepository.findById(talentId)
                 .orElseThrow(() -> new UserNotFoundException(talentId));
         return skillMapper.toTalentWithSkills(talent);
@@ -206,22 +198,22 @@ public class SkillServiceImpl implements SkillServiceInterface {
 
     @Override
     @Transactional(readOnly = true)
-    public ProofListWithSkills getListProofsOfSkill(long talentId, long skillId, String requestedStatus, Authentication auth) {
+    public ProofListWithSkills getListProofsOfSkill(long talentId, long skillId, String requestedStatus) {
         talentService.isStatusCorrect(requestedStatus);
         Status status = Status.valueOf(requestedStatus);
         List<ProofEntity> proofs;
         if (!proofRepository.existsByTalent_TalentIdAndSkills_SkillId(talentId, skillId)) {
             return ProofListWithSkills.builder().data(Collections.emptyList()).build();
         }
-        if (talentService.checkingLoggedAndToken(talentId, auth)) {
+        /*if (talentService.checkingLoggedAndToken(talentId, auth)) {
             proofs = proofRepository.findByTalent_TalentIdAndSkills_SkillIdAndStatus(talentId, skillId, Status.PUBLISHED);
             return proofMapper.toProofListWithSkills(proofs);
-        }
+        }*/
         if (requestedStatus.equals(Status.ALL.getStatus())) {
             proofs = proofRepository.findByTalent_TalentIdAndSkills_SkillId(talentId, skillId);
             return proofMapper.fromFulltoProofListWithSkills(proofs);
         }
         proofs = proofRepository.findByTalent_TalentIdAndSkills_SkillIdAndStatus(talentId, skillId, status);
         return proofMapper.fromFulltoProofListWithSkills(proofs);
-    }*/
+    }
 }

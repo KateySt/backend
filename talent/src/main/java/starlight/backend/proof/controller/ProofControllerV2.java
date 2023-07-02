@@ -1,6 +1,27 @@
 package starlight.backend.proof.controller;
 
-/*
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import starlight.backend.proof.model.request.ProofAddWithSkillsRequest;
+import starlight.backend.proof.model.response.ProofFullInfoWithSkills;
+import starlight.backend.proof.model.response.ProofPagePaginationWithSkills;
+import starlight.backend.proof.service.ProofServiceInterface;
+import starlight.backend.talent.model.response.TalentPagePagination;
+
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -55,13 +76,12 @@ public class ProofControllerV2 {
     })
     @GetMapping("/talents/{talent-id}/proofs")
     public ProofPagePaginationWithSkills getTalentProofs(@PathVariable("talent-id") long talentId,
-                                                         Authentication auth,
                                                          @RequestParam(defaultValue = "0") @Min(0) int page,
                                                          @RequestParam(defaultValue = "5") @Positive int size,
                                                          @RequestParam(defaultValue = "true") boolean sort,
                                                          @RequestParam(defaultValue = "ALL") String status) {
         log.info("@GetMapping(\"/talents/{talent-id}/proofs\")");
-        return proofService.getTalentAllProofsWithSkills(auth, talentId, page, size, sort, status);
+        return proofService.getTalentAllProofsWithSkills(talentId, page, size, sort, status);
     }
 
     @Operation(summary = "Return Proof information with skills for an authenticated user")
@@ -81,10 +101,9 @@ public class ProofControllerV2 {
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/proofs/{proof-id}")
-    public ProofFullInfoWithSkills getFullProof(@PathVariable("proof-id") long proofId,
-                                                Authentication auth) {
+    public ProofFullInfoWithSkills getFullProof(@PathVariable("proof-id") long proofId) {
         log.info("@GetMapping(\"/proofs/{proof-id}\")");
-        return proofService.getProofFullInfoWithSkills(auth, proofId);
+        return proofService.getProofFullInfoWithSkills(proofId);
     }
 
     @Operation(
@@ -123,14 +142,11 @@ public class ProofControllerV2 {
                     )
             )
     })
-    @PreAuthorize("hasRole('TALENT') or hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/talents/{talent-id}/proofs")
     public ResponseEntity<?> addProofFullInfo(@PathVariable("talent-id") long talentId,
-                                              @RequestBody ProofAddWithSkillsRequest proofAddWithSkillsRequest,
-                                              Authentication auth) {
+                                              @RequestBody ProofAddWithSkillsRequest proofAddWithSkillsRequest) {
         log.info("@PostMapping(\"v2/talents/{talent-id}/proofs\")");
-        return proofService.getLocationForAddProofWithSkill(talentId, proofAddWithSkillsRequest, auth);
+        return proofService.getLocationForAddProofWithSkill(talentId, proofAddWithSkillsRequest);
     }
 }
-*/
