@@ -1,12 +1,16 @@
 server:
-  port: 8080
+  port: 8084
 
 spring:
+  cloud:
+    config:
+      uri: http://localhost:8888
+      enabled: false
   application:
-    name: customer
+    name: sponsor
   datasource:
     username: root
-    url: jdbc:postgresql://localhost:5432/auth
+    url: jdbc:postgresql://localhost:5432/sponsor
     password: 123456789
   jpa:
     properties:
@@ -16,12 +20,14 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
-  zipkin:
-    base-url: http://localhost:9411
+  mail:
+    username: java.team.maksym@gmail.com
+    password: SoftServe123!
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-    fetch-registry: true
-    register-with-eureka: true
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          client:
+            RestTemplate: DEBUG

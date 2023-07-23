@@ -9,8 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +20,9 @@ import starlight.backend.email.model.ChangePassword;
 import starlight.backend.email.model.Email;
 import starlight.backend.email.model.EmailProps;
 import starlight.backend.email.service.EmailService;
+import starlight.backend.exception.user.UserNotFoundException;
 import starlight.backend.exception.user.UserNotFoundWithUUIDException;
-import starlight.backend.exception.user.sponsor.SponsorCanNotSeeAnotherSponsor;
 import starlight.backend.exception.user.sponsor.SponsorNotFoundException;
-import starlight.backend.security.service.SecurityServiceInterface;
 import starlight.backend.sponsor.SponsorRepository;
 import starlight.backend.sponsor.model.entity.SponsorEntity;
 import starlight.backend.sponsor.model.enums.SponsorStatus;
@@ -45,7 +42,6 @@ public class EmailServiceImpl implements EmailService {
     private JavaMailSender emailSender;
 
     private SponsorRepository sponsorRepository;
-    private SecurityServiceInterface securityService;
     private DelayDeleteRepository delayDeleteRepository;
 
     private PasswordEncoder passwordEncoder;
@@ -55,22 +51,19 @@ public class EmailServiceImpl implements EmailService {
     @Transactional
     public void recoverySponsorAccount(UUID uuid) {
         DelayedDeleteEntity delayedDeleteEntity = delayDeleteRepository.findByUserDeletingProcessUuid(uuid)
-                .orElseThrow(() ->  new UserNotFoundWithUUIDException(String.valueOf(uuid)));
-        
+                .orElseThrow(() -> new UserNotFoundWithUUIDException(String.valueOf(uuid)));
+
         long sponsorId = delayedDeleteEntity.getEntityId();
         SponsorEntity sponsor = sponsorRepository.findById(sponsorId)
                 .orElseThrow(() -> new SponsorNotFoundException(sponsorId));
-        
+
         sponsor.setStatus(SponsorStatus.ACTIVE);
         sponsorRepository.save(sponsor);
         delayDeleteRepository.delete(delayedDeleteEntity);
     }
 
     @Override
-    public void sendMail(Email email,long sponsorId, Authentication auth) {
-        if (!securityService.checkingLoggedAndToken(sponsorId, auth)) {
-            throw new SponsorCanNotSeeAnotherSponsor();
-        }
+    public void sendMail(Email email, long sponsorId) {
         var sponsor = sponsorRepository.findById(sponsorId)
                 .orElseThrow(() -> new SponsorNotFoundException(sponsorId));
         if (email.pathToAttachment() == null) {
@@ -112,14 +105,14 @@ public class EmailServiceImpl implements EmailService {
     @Transactional
     public void forgotPassword(HttpServletRequest request, String email) {
         var sponsor = sponsorRepository.findByEmail(email).orElseThrow(() ->
-                new UsernameNotFoundException("User not found"));
+                new UserNotFoundException("User not found"));
         String token = UUID.randomUUID().toString();
         createPasswordResetTokenForUser(sponsor, token);
         sendSimpleMessage(email, "Password recovery",
                 constructResetTokenEmail(getAppUrl(request), token));
     }
 
-    public void sendRecoveryMessageSponsorAccount(String email, UUID uuid){
+    public void sendRecoveryMessageSponsorAccount(String email, UUID uuid) {
         sendSimpleMessage(email, "Recovery Account",
                 constructSponsorRecoveryAccount(uuid.toString()));
     }
@@ -128,7 +121,7 @@ public class EmailServiceImpl implements EmailService {
     @Transactional
     public void recoveryPassword(String token, ChangePassword changePassword) {
         var sponsor = sponsorRepository.findByActivationCode(token).orElseThrow(() ->
-                new UsernameNotFoundException("User not found"));
+                new UserNotFoundException("User not found"));
         if (!sponsorRepository.existsByActivationCode(sponsor.getActivationCode())) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid token");
         }
@@ -158,7 +151,8 @@ public class EmailServiceImpl implements EmailService {
                         "password on your account!\n%s\n",
                 appUrl + "/api/v1/sponsors/recovery-password?token=" + token);
     }
-    private String constructSponsorRecoveryAccount(String uuid){
+
+    private String constructSponsorRecoveryAccount(String uuid) {
         return String.format("This is your request to recovery your account in Starlight project.\n" +
                         "If you haven't done so, please dont ignore this email.\n" +
                         "If you want to reactivate your account, please click on the link below:\n" +

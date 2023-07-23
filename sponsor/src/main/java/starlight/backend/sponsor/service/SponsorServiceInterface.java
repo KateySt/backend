@@ -1,18 +1,20 @@
 package starlight.backend.sponsor.service;
 
+import org.springframework.http.ResponseEntity;
 import starlight.backend.sponsor.model.request.SponsorUpdateRequest;
 import starlight.backend.sponsor.model.response.SponsorFullInfo;
 import starlight.backend.sponsor.model.response.SponsorKudosInfo;
 
 public interface SponsorServiceInterface {
-    SponsorKudosInfo getUnusableKudos(long sponsorId, Authentication auth);
+    SponsorKudosInfo getUnusableKudos(long sponsorId);
 
-    SponsorFullInfo getSponsorFullInfo(long sponsorId, Authentication auth);
-    SponsorFullInfo updateSponsorProfile(long id, SponsorUpdateRequest sponsorUpdateRequest, Authentication auth);
+    SponsorFullInfo getSponsorFullInfo(long sponsorId);
 
-    ResponseEntity<String> deleteSponsor(long sponsorId, Authentication authentication);
+    SponsorFullInfo updateSponsorProfile(long id, SponsorUpdateRequest sponsorUpdateRequest);
 
-    String getSponsorMail(long sponsorId, Authentication auth);
+    ResponseEntity<String> deleteSponsor(long sponsorId);
 
-    ResponseEntity<String> sendEmailForRecoverySponsorAccount(long sponsorId, Authentication auth);
+    String getSponsorMail(long sponsorId);
+
+    ResponseEntity<String> sendEmailForRecoverySponsorAccount(long sponsorId);
 }

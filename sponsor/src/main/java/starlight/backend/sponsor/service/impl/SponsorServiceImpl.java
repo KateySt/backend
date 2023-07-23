@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,24 +14,19 @@ import starlight.backend.advice.repository.DelayDeleteRepository;
 import starlight.backend.advice.service.AdviceService;
 import starlight.backend.email.model.EmailProps;
 import starlight.backend.email.service.EmailService;
-import starlight.backend.exception.YouAreInDeletingProcess;
 import starlight.backend.exception.user.sponsor.SponsorAlreadyOnDeleteList;
-import starlight.backend.exception.user.sponsor.SponsorCanNotSeeAnotherSponsor;
 import starlight.backend.exception.user.sponsor.SponsorNotFoundException;
-import starlight.backend.security.service.SecurityServiceInterface;
 import starlight.backend.sponsor.SponsorMapper;
 import starlight.backend.sponsor.SponsorRepository;
 import starlight.backend.sponsor.model.entity.SponsorEntity;
 import starlight.backend.sponsor.model.enums.SponsorStatus;
 import starlight.backend.sponsor.model.request.SponsorUpdateRequest;
-import starlight.backend.sponsor.model.response.KudosWithProofId;
 import starlight.backend.sponsor.model.response.SponsorFullInfo;
 import starlight.backend.sponsor.model.response.SponsorKudosInfo;
 import starlight.backend.sponsor.service.SponsorServiceInterface;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -42,22 +36,19 @@ import java.util.UUID;
 public class SponsorServiceImpl implements SponsorServiceInterface {
     private EmailProps emailProps;
     private SponsorRepository sponsorRepository;
-    private SecurityServiceInterface securityService;
     private DelayDeleteRepository delayDeleteRepository;
     private AdviceConfiguration adviceConfiguration;
-    private SecurityServiceInterface serviceService;
     private SponsorMapper sponsorMapper;
     private EmailService emailService;
     private AdviceService adviceService;
 
 
     @Override
-    public SponsorKudosInfo getUnusableKudos(long sponsorId, Authentication auth) {
-        isItMyAccount(sponsorId, auth);
+    public SponsorKudosInfo getUnusableKudos(long sponsorId) {
         int alreadyMarkedKudos;
         var sponsor = sponsorRepository.findById(sponsorId)
                 .orElseThrow(() -> new SponsorNotFoundException(sponsorId));
-        List<KudosWithProofId> kudosList = sponsor.getKudos()
+        /*List<KudosWithProofId> kudosList = sponsor.getKudos()
                 .stream()
                 .map(el -> sponsorMapper.toKudosWithProofId(el))
                 .toList();
@@ -68,15 +59,15 @@ public class SponsorServiceImpl implements SponsorServiceInterface {
                     .map(KudosWithProofId::countKudos)
                     .reduce(Integer::sum)
                     .get();
-        }
-        return new SponsorKudosInfo(sponsor.getUnusedKudos(), alreadyMarkedKudos, kudosList);
+        }*/
+        return null;
+        //return new SponsorKudosInfo(sponsor.getUnusedKudos(), alreadyMarkedKudos, kudosList);
     }
 
     @Override
-    public SponsorFullInfo getSponsorFullInfo(long sponsorId, Authentication auth) {
+    public SponsorFullInfo getSponsorFullInfo(long sponsorId) {
         var sponsor = sponsorRepository.findById(sponsorId)
                 .orElseThrow(() -> new SponsorNotFoundException(sponsorId));
-        isItMyAccount(sponsorId, auth);
         return SponsorFullInfo.builder()
                 .fullName(sponsor.getFullName())
                 .avatar(sponsor.getAvatar())
@@ -85,20 +76,8 @@ public class SponsorServiceImpl implements SponsorServiceInterface {
                 .build();
     }
 
-    private void isItMyAccount(long sponsorId, Authentication auth) {
-        if (!serviceService.checkingLoggedAndToken(sponsorId, auth)) {
-            throw new SponsorCanNotSeeAnotherSponsor();
-        }
-    }
-
     @Override
-    public SponsorFullInfo updateSponsorProfile(long sponsorId, SponsorUpdateRequest sponsorUpdateRequest, Authentication auth) {
-        if (!securityService.isSponsorActive(auth)) {
-            throw new YouAreInDeletingProcess();
-        }
-        if (!serviceService.checkingLoggedAndToken(sponsorId, auth)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "you cannot change another sponsor");
-        }
+    public SponsorFullInfo updateSponsorProfile(long sponsorId, SponsorUpdateRequest sponsorUpdateRequest) {
         return sponsorRepository.findById(sponsorId).map(sponsor -> {
                     sponsor.setAvatar(validationField(
                             sponsorUpdateRequest.avatar(),
@@ -121,7 +100,7 @@ public class SponsorServiceImpl implements SponsorServiceInterface {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you can't reduce the number of kudos");
         }
         var countKudos = unusedKudos + sponsor.getUnusedKudos();
-        if(countKudos>=100000){
+        if (countKudos >= 100000) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "you can't add more 100 000 kudos");
         }
         sponsor.setUnusedKudos(countKudos);
@@ -136,14 +115,10 @@ public class SponsorServiceImpl implements SponsorServiceInterface {
 
     @Override
     @Transactional
-    public ResponseEntity<String> deleteSponsor(long sponsorId, Authentication auth) {
-        if (!sponsorRepository.existsBySponsorId(sponsorId)) {
+    public ResponseEntity<String> deleteSponsor(long sponsorId) {
+        if (sponsorRepository.existsBySponsorId(sponsorId)) {
             throw new SponsorNotFoundException(sponsorId);
         }
-        if (!securityService.checkingLoggedAndToken(sponsorId, auth)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "You cannot delete this sponsor");
-        }
-
         sponsorRepository.findById(sponsorId).ifPresent(sponsor -> {
             if (delayDeleteRepository.existsByEntityId(sponsor.getSponsorId())) {
                 throw new SponsorAlreadyOnDeleteList(sponsor.getSponsorId());
@@ -176,11 +151,8 @@ public class SponsorServiceImpl implements SponsorServiceInterface {
 
     @Override
     @Transactional(readOnly = true)
-    public String getSponsorMail(long sponsorId, Authentication auth) {
-        if (!serviceService.checkingLoggedAndToken(sponsorId, auth)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "you cannot get another sponsor");
-        }
-        if (!sponsorRepository.existsBySponsorId(sponsorId)) {
+    public String getSponsorMail(long sponsorId) {
+        if (sponsorRepository.existsBySponsorId(sponsorId)) {
             throw new SponsorNotFoundException(sponsorId);
         }
         return sponsorRepository.findById(sponsorId)
@@ -190,8 +162,8 @@ public class SponsorServiceImpl implements SponsorServiceInterface {
 
     @Override
     @Transactional(readOnly = true)
-    public ResponseEntity<String> sendEmailForRecoverySponsorAccount(long sponsorId, Authentication auth) {
-        String email = getSponsorMail(sponsorId, auth);
+    public ResponseEntity<String> sendEmailForRecoverySponsorAccount(long sponsorId) {
+        String email = getSponsorMail(sponsorId);
         emailService.sendRecoveryMessageSponsorAccount(email, adviceService.getUUID(sponsorId));
         log.info("Email sent to sponsor {}", email);
         return ResponseEntity.ok("Email sent to " + email);

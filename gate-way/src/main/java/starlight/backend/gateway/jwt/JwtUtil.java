@@ -59,6 +59,9 @@ public class JwtUtil {
         return currentTimestamp - issuedAt > maxTokenAgeSeconds;
     }
 
+    public boolean checkStatus(String status) {
+        return status.equals(SponsorStatus.ACTIVE.name());
+    }
 
     public boolean checkIdWithRole(long id, String role) {
         if (role.equals(Role.TALENT)) {

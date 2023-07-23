@@ -205,10 +205,6 @@ public class SkillServiceImpl implements SkillServiceInterface {
         if (!proofRepository.existsByTalent_TalentIdAndSkills_SkillId(talentId, skillId)) {
             return ProofListWithSkills.builder().data(Collections.emptyList()).build();
         }
-        /*if (talentService.checkingLoggedAndToken(talentId, auth)) {
-            proofs = proofRepository.findByTalent_TalentIdAndSkills_SkillIdAndStatus(talentId, skillId, Status.PUBLISHED);
-            return proofMapper.toProofListWithSkills(proofs);
-        }*/
         if (requestedStatus.equals(Status.ALL.getStatus())) {
             proofs = proofRepository.findByTalent_TalentIdAndSkills_SkillId(talentId, skillId);
             return proofMapper.fromFulltoProofListWithSkills(proofs);

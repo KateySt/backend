@@ -10,7 +10,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 import starlight.backend.gateway.enums.Role;
 import starlight.backend.gateway.jwt.JwtUtil;
@@ -51,14 +50,14 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
 
                 String status = jwtUtil.getStatus(claims);
 
-                jwtUtil.checkIdWithRole(Long.parseLong(id),role);
-
-
+                jwtUtil.checkIdWithRole(Long.parseLong(id), role);
 
                 if (jwtUtil.checkTimeToken(claims)) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token expired");
                 }
-
+                if (!jwtUtil.checkStatus(status)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bed status");
+                }
                 if (((!exchange.getRequest().getPath().toString().equals("/api/v1/talents/" + id))
                         || !role.equals(Role.TALENT.getAuthority()))
                         && (exchange.getRequest().getMethod() == HttpMethod.PATCH

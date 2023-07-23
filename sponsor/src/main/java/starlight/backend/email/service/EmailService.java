@@ -1,7 +1,6 @@
 package starlight.backend.email.service;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.core.Authentication;
 import starlight.backend.email.model.ChangePassword;
 import starlight.backend.email.model.Email;
 
@@ -9,7 +8,7 @@ import java.util.UUID;
 
 public interface EmailService {
 
-    void sendMail(Email email, long sponsorId, Authentication auth);
+    void sendMail(Email email, long sponsorId);
 
     void sendSimpleMessage(String to, String subject, String text);
 

@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import starlight.backend.sponsor.model.request.SponsorUpdateRequest;
 import starlight.backend.sponsor.model.response.SponsorFullInfo;
@@ -46,10 +44,9 @@ public class SponsorController {
             }
     )
     @GetMapping("/sponsors/{sponsor-id}/kudos")
-    public SponsorKudosInfo getUnusableKudosForSponsor(@PathVariable("sponsor-id") long sponsorId,
-                                             Authentication auth) {
+    public SponsorKudosInfo getUnusableKudosForSponsor(@PathVariable("sponsor-id") long sponsorId) {
         log.info("@GetMapping(\"/sponsors/{sponsor-id}/kudos\")");
-        return sponsorService.getUnusableKudos(sponsorId, auth);
+        return sponsorService.getUnusableKudos(sponsorId);
     }
 
     @Operation(
@@ -62,11 +59,9 @@ public class SponsorController {
     }
     )
     @GetMapping("/sponsors/{sponsor-id}")
-    @PreAuthorize("hasRole('SPONSOR') or hasRole('ADMIN')")
-    public SponsorFullInfo sponsorFullInfo(@PathVariable("sponsor-id") long sponsorId,
-                                           Authentication auth) {
+    public SponsorFullInfo sponsorFullInfo(@PathVariable("sponsor-id") long sponsorId) {
         log.info("@GetMapping(\"/sponsors/{sponsor-id}\")");
-        return sponsorService.getSponsorFullInfo(sponsorId, auth);
+        return sponsorService.getSponsorFullInfo(sponsorId);
     }
 
     @Operation(summary = "Update sponsor by id")
@@ -87,13 +82,11 @@ public class SponsorController {
             @ApiResponse(responseCode = "404", description = "Not found"),
             @ApiResponse(responseCode = "409", description = "Conflict")
     })
-    @PreAuthorize("hasRole('SPONSOR') or hasRole('ADMIN')")
     @PatchMapping("/sponsors/{sponsor-id}")
     public SponsorFullInfo updateSponsorFullInfo(@PathVariable("sponsor-id") long sponsorId,
-                                                 @RequestBody SponsorUpdateRequest sponsorUpdateRequest,
-                                                 Authentication auth) {
+                                                 @RequestBody SponsorUpdateRequest sponsorUpdateRequest) {
         log.info("@PatchMapping(\"/sponsors/{sponsor-id}\")");
-        return sponsorService.updateSponsorProfile(sponsorId, sponsorUpdateRequest, auth);
+        return sponsorService.updateSponsorProfile(sponsorId, sponsorUpdateRequest);
     }
 
     @Operation(
@@ -108,12 +101,11 @@ public class SponsorController {
             @ApiResponse(responseCode = "404", description = "Sponsor not found")
     })
     @Tag(name = "Delete", description = "Delete sponsor")
-    @PreAuthorize("hasRole('ROLE_SPONSOR') or hasRole('ADMIN')")
     @DeleteMapping("/sponsors/{sponsor-id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> deleteSponsor(@PathVariable("sponsor-id") long sponsorId, Authentication auth) {
+    public ResponseEntity<String> deleteSponsor(@PathVariable("sponsor-id") long sponsorId) {
         log.info("@DeleteMapping(\"/sponsors/{sponsor-id}\")");
-        return sponsorService.deleteSponsor(sponsorId, auth);
+        return sponsorService.deleteSponsor(sponsorId);
     }
 
     @Operation(
@@ -127,12 +119,10 @@ public class SponsorController {
     }
     )
     @Tag(name = "Delete")
-    @PreAuthorize("hasRole('ROLE_SPONSOR') or hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/sponsors/{sponsor-id}/send-recovery-account-email")
-    public ResponseEntity<String> sendEmailForRecoverySponsorAccount(@PathVariable("sponsor-id") long sponsorId,
-                                                                     Authentication auth) {
+    public ResponseEntity<String> sendEmailForRecoverySponsorAccount(@PathVariable("sponsor-id") long sponsorId) {
         log.info("@PostMapping(\"/sponsors/{sponsor-id}/send-recovery-account-email\")");
-        return sponsorService.sendEmailForRecoverySponsorAccount(sponsorId, auth);
+        return sponsorService.sendEmailForRecoverySponsorAccount(sponsorId);
     }
 }

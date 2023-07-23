@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import starlight.backend.email.model.ChangePassword;
 import starlight.backend.email.model.Email;
@@ -44,10 +43,9 @@ public class EmailController {
     )
     @PostMapping("/sponsors/{sponsor-id}/send")
     public void sendMail(@RequestBody Email email,
-                         @PathVariable("sponsor-id") long sponsorId,
-                         Authentication auth) {
+                         @PathVariable("sponsor-id") long sponsorId) {
         log.info("@PostMapping(\"/sponsors/{sponsor-id}/send\")");
-        emailService.sendMail(email, sponsorId, auth);
+        emailService.sendMail(email, sponsorId);
     }
 
     @Operation(
